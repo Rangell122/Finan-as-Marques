@@ -17,6 +17,7 @@ export function AddTransactionDialog({ onAdd }: { onAdd: () => void }) {
   const [date, setDate] = useState('');
   const [category, setCategory] = useState('');
   const [status, setStatus] = useState('paid');
+  const [responsible, setResponsible] = useState('Os dois');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,10 +27,12 @@ export function AddTransactionDialog({ onAdd }: { onAdd: () => void }) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuário não autenticado");
 
+      const finalDesc = type === 'expense' ? `[${responsible}] ${description}` : description;
+
       const { error } = await supabase.from('transactions').insert({
         user_id: user.id,
         type,
-        description,
+        description: finalDesc,
         amount: parseFloat(amount),
         date,
         category,
@@ -45,6 +48,7 @@ export function AddTransactionDialog({ onAdd }: { onAdd: () => void }) {
       setAmount('');
       setDate('');
       setCategory('');
+      setResponsible('Os dois');
       
       onAdd();
     } catch (err: any) {
@@ -90,6 +94,22 @@ export function AddTransactionDialog({ onAdd }: { onAdd: () => void }) {
             </div>
           </div>
           
+          {type === 'expense' && (
+            <div className="space-y-2">
+              <Label>Quem Gastou?</Label>
+              <Select value={responsible} onValueChange={setResponsible}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Jack">Jack</SelectItem>
+                  <SelectItem value="Rangel">Rangel</SelectItem>
+                  <SelectItem value="Os dois">Os dois</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label>Descrição</Label>
             <Input required value={description} onChange={e => setDescription(e.target.value)} placeholder="Ex: Supermercado" />

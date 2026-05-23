@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Logo } from '@/components/Logo'
 
 export function Login() {
   const [email, setEmail] = useState('')
@@ -33,10 +34,10 @@ export function Login() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#fcfbf8] px-4">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <Card className="w-full max-w-md shadow-lg border-none">
         <CardHeader className="text-center space-y-2">
-          <div className="mx-auto w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-xl mb-2">FM</div>
+          <Logo className="mx-auto w-16 h-16 mb-2" />
           <CardTitle className="text-2xl font-bold">Finanças Marques</CardTitle>
           <CardDescription>
             {isSignUp ? 'Crie a conta do casal para começar' : 'Acesse o painel financeiro'}
