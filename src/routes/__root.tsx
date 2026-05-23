@@ -11,7 +11,8 @@ import { LayoutDashboard, Receipt, PieChart, Settings, Menu } from "lucide-react
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
-import { useMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Plus } from "lucide-react";
 
 import appCss from "../styles.css?url";
 
