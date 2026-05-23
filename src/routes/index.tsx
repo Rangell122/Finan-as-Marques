@@ -26,7 +26,7 @@ const transactions = [
 
 function SummaryCard({ title, value, icon: Icon, color }: { title: string; value: string; icon: any; color: string }) {
   return (
-    <Card className="hover:shadow-lg transition-shadow duration-300 border-none bg-white/50 backdrop-blur-sm">
+    <Card className="hover:shadow-lg transition-shadow duration-300 border-none bg-white/80 backdrop-blur-sm">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
         <Icon className={`h-4 w-4 ${color}`} />
@@ -47,9 +47,12 @@ function Index() {
       className="p-4 md:p-8 space-y-8 bg-[#fcfbf8] min-h-screen"
     >
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold tracking-tight">Finanças Marques</h1>
-        <Button className="rounded-full hover:scale-105 transition-transform bg-primary">
-          <Plus className="mr-2 h-4 w-4" /> Novo Lançamento
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Finanças Marques</h1>
+          <p className="text-muted-foreground">Bem-vindo ao seu painel financeiro.</p>
+        </div>
+        <Button className="rounded-full hover:scale-105 transition-transform bg-primary shadow-lg h-12 px-6">
+          <Plus className="mr-2 h-5 w-5" /> Novo Lançamento
         </Button>
       </div>
 
@@ -60,19 +63,19 @@ function Index() {
         <SummaryCard title="Contas Atrasadas" value="R$ 150,00" icon={AlertCircle} color="text-orange-500" />
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-6">Visão Geral</h2>
+      <div className="grid gap-6 lg:grid-cols-7">
+        <Card className="lg:col-span-4 p-6 border-none shadow-sm">
+          <h2 className="text-xl font-semibold mb-6">Entradas vs Saídas</h2>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} />
+                <YAxis axisLine={false} tickLine={false} />
+                <Tooltip cursor={{fill: '#f8f8f8'}} />
+                <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={60}>
                   {data.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={index === 0 ? "#16a34a" : "#dc2626"} />
+                    <Cell key={`cell-${index}`} fill={index === 0 ? "oklch(0.6 0.15 150)" : "oklch(0.6 0.15 25)"} />
                   ))}
                 </Bar>
               </BarChart>
@@ -80,26 +83,26 @@ function Index() {
           </div>
         </Card>
 
-        <Card className="p-6">
+        <Card className="lg:col-span-3 p-6 border-none shadow-sm">
           <h2 className="text-xl font-semibold mb-6">Últimas Transações</h2>
           <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Descrição</TableHead>
-                <TableHead className="text-right">Valor</TableHead>
-              </TableRow>
-            </TableHeader>
             <TableBody>
               {transactions.slice(0, 5).map((t) => (
-                <TableRow key={t.id}>
-                  <TableCell>{t.desc}</TableCell>
-                  <TableCell className={`text-right font-medium ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                    {t.type === 'income' ? '+' : '-'} R$ {t.val.toFixed(2)}
+                <TableRow key={t.id} className="hover:bg-secondary/50 border-none">
+                  <TableCell className="pl-0">
+                    <div className="font-medium">{t.desc}</div>
+                    <div className="text-xs text-muted-foreground">{t.cat}</div>
+                  </TableCell>
+                  <TableCell className={`text-right font-bold ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                    {t.type === 'income' ? '+' : '-'} R$ {t.val.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
+          <Button variant="ghost" className="w-full mt-4 text-primary hover:text-primary hover:bg-primary/5">
+            Ver todas
+          </Button>
         </Card>
       </div>
     </motion.div>
