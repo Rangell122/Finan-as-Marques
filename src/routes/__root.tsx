@@ -13,6 +13,9 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Plus } from "lucide-react";
+import { useEffect } from "react";
+import { supabase } from "@/lib/supabase";
+import { Login } from "@/components/Login";
 
 import appCss from "../styles.css?url";
 
@@ -157,6 +160,31 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
+  const [session, setSession] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoading(false);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  if (loading) {
+    return <div className="flex min-h-screen items-center justify-center bg-[#fcfbf8]">Carregando...</div>;
+  }
+
+  if (!session) {
+    return <Login />;
+  }
 
   return (
     <QueryClientProvider client={queryClient}>

@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-export const Route = createFileRoute("/transacoes" as any)({
+export const Route = createFileRoute("/transacoes")({
   component: TransactionsPage,
 });
 
