@@ -220,36 +220,6 @@ function RootComponent() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
-
-      // Auto-import transactions wiping dummy data automatically once
-      if (session?.user) {
-        if (!localStorage.getItem("data_imported_v3")) {
-          console.log("Wiping dummy data and auto-importing real data...");
-          supabase
-            .from("transactions")
-            .delete()
-            .eq("user_id", session.user.id)
-            .then(async () => {
-              if (importData && importData.length > 0) {
-                const batch = importData.map((t) => ({
-                  user_id: session.user.id,
-                  type: t.type,
-                  description: t.description,
-                  amount: t.amount,
-                  date: t.date,
-                  category: t.category,
-                  status: t.status === "Pago" ? "paid" : t.status === "Pendente" ? "pending" : "pending",
-                }));
-                await supabase.from("transactions").insert(batch);
-                localStorage.setItem("data_imported_v3", "true");
-                alert(
-                  "Dados falsos removidos! Seus 212 lançamentos reais foram importados automaticamente.",
-                );
-                window.location.reload();
-              }
-            });
-        }
-      }
     });
 
     const {
@@ -680,14 +650,18 @@ function RootComponent() {
                       onClick={async () => {
                         if (
                           confirm(
-                            "Deseja importar as 212 transações da planilha Google Sheets? Essa ação pode demorar alguns segundos.",
+                            "Deseja importar as 212 transações da planilha Google Sheets? Isso apagará todos os dados atuais da plataforma e recarregará os originais.",
                           )
                         ) {
                           const {
                             data: { user },
                           } = await supabase.auth.getUser();
                           if (user) {
-                            alert("Iniciando importação! Por favor, não feche a página.");
+                            alert("Limpando dados antigos e iniciando importação! Por favor, não feche a página.");
+                            
+                            // WIPE FIRST to prevent duplication!
+                            await supabase.from("transactions").delete().eq("user_id", user.id);
+                            
                             let successCount = 0;
                             // Batch processing to avoid rate limits
                             for (let i = 0; i < importData.length; i++) {

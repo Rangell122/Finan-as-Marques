@@ -33,12 +33,16 @@ function Ajustes() {
   };
 
   const handleImport = async () => {
-    if (confirm("Deseja forçar a importação da planilha Google Sheets agora?")) {
+    if (confirm("Deseja forçar a importação da planilha Google Sheets agora? Isso apagará todos os dados atuais da plataforma e recarregará os originais.")) {
       const {
         data: { user },
       } = await supabase.auth.getUser();
       if (user) {
-        alert("Iniciando importação! Por favor, não feche a página.");
+        alert("Limpando dados antigos e iniciando importação! Por favor, não feche a página.");
+        
+        // WIPE FIRST to prevent duplication!
+        await supabase.from("transactions").delete().eq("user_id", user.id);
+        
         let successCount = 0;
         for (let i = 0; i < importData.length; i++) {
           const t = importData[i];

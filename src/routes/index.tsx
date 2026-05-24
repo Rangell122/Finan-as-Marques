@@ -112,7 +112,7 @@ function Index() {
         const {
           data: { session },
         } = await supabase.auth.getSession();
-        if (session?.user && !localStorage.getItem("migracao_final_concluida_v4")) {
+        if (session?.user && !localStorage.getItem("migracao_final_concluida_v5")) {
           console.log("Iniciando migração automática agressiva...");
 
           // Apaga todos os dados existentes do usuário logado
@@ -144,7 +144,7 @@ function Index() {
             return;
           }
 
-          localStorage.setItem("migracao_final_concluida_v4", "true");
+          localStorage.setItem("migracao_final_concluida_v5", "true");
           alert(
             "SISTEMA ATUALIZADO! Dados falsos removidos e todas as transações reais da planilha carregadas com sucesso!",
           );
