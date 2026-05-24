@@ -592,6 +592,38 @@
     "status": "Pendente"
   },
   {
+    "description": "[Os dois] Padaria",
+    "amount": 47,
+    "date": "2026-02-10",
+    "category": "Casa - Mercado / Compras",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Padaria",
+    "amount": 73,
+    "date": "2026-03-10",
+    "category": "Casa - Mercado / Compras",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Padaria",
+    "amount": 107.43,
+    "date": "2026-04-10",
+    "category": "Casa - Mercado / Compras",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Padaria",
+    "amount": 97.12,
+    "date": "2026-05-10",
+    "category": "Casa - Mercado / Compras",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
     "description": "[Os dois] Farmacia",
     "amount": 34.1,
     "date": "2026-05-10",
@@ -760,7 +792,7 @@
     "status": "Pendente"
   },
   {
-    "description": "[Os dois] Cartão de créditoMercado pago",
+    "description": "[Os dois] Cartão de crédito-Mercado pago",
     "amount": 494,
     "date": "2026-01-10",
     "category": "Casa - Mercado / Compras",
@@ -768,7 +800,7 @@
     "status": "Pago"
   },
   {
-    "description": "[Os dois] Cartão de créditoMercado pago",
+    "description": "[Os dois] Cartão de crédito-Mercado pago",
     "amount": 313,
     "date": "2026-02-10",
     "category": "Casa - Mercado / Compras",
@@ -776,15 +808,7 @@
     "status": "Pago"
   },
   {
-    "description": "[Os dois] Cartão de créditoMercado pago",
-    "amount": 1705,
-    "date": "2026-05-10",
-    "category": "Casa - Mercado / Compras",
-    "type": "expense",
-    "status": "Pendente"
-  },
-  {
-    "description": "[Os dois] Cartão de créditoMercado pago",
+    "description": "[Os dois] Cartão de crédito-Mercado pago",
     "amount": 1705,
     "date": "2026-06-10",
     "category": "Casa - Mercado / Compras",
@@ -816,7 +840,7 @@
     "status": "Pago"
   },
   {
-    "description": "[Os dois] Havan",
+    "description": "[Os dois] Divida-Havan",
     "amount": 565.8,
     "date": "2026-01-10",
     "category": "Outros Gastos",
@@ -824,7 +848,7 @@
     "status": "Pago"
   },
   {
-    "description": "[Os dois] Havan",
+    "description": "[Os dois] Divida-Havan",
     "amount": 655,
     "date": "2026-02-10",
     "category": "Outros Gastos",
@@ -832,7 +856,7 @@
     "status": "Pago"
   },
   {
-    "description": "[Os dois] Havan",
+    "description": "[Os dois] Divida-Havan",
     "amount": 581,
     "date": "2026-03-10",
     "category": "Outros Gastos",
@@ -840,7 +864,7 @@
     "status": "Pago"
   },
   {
-    "description": "[Os dois] Havan",
+    "description": "[Os dois] Divida-Havan",
     "amount": 460,
     "date": "2026-04-10",
     "category": "Outros Gastos",
@@ -848,7 +872,7 @@
     "status": "Pago"
   },
   {
-    "description": "[Os dois] Havan",
+    "description": "[Os dois] Divida-Havan",
     "amount": 3070,
     "date": "2026-05-10",
     "category": "Outros Gastos",
@@ -856,7 +880,7 @@
     "status": "Pendente"
   },
   {
-    "description": "[Os dois] Havan",
+    "description": "[Os dois] Divida-Havan",
     "amount": 280.91,
     "date": "2026-06-10",
     "category": "Outros Gastos",
@@ -864,7 +888,7 @@
     "status": "Pendente"
   },
   {
-    "description": "[Os dois] Havan",
+    "description": "[Os dois] Divida-Havan",
     "amount": 114.97,
     "date": "2026-07-10",
     "category": "Outros Gastos",
@@ -872,7 +896,7 @@
     "status": "Pendente"
   },
   {
-    "description": "[Os dois] Havan",
+    "description": "[Os dois] Divida-Havan",
     "amount": 114.97,
     "date": "2026-08-10",
     "category": "Outros Gastos",
@@ -880,7 +904,7 @@
     "status": "Pendente"
   },
   {
-    "description": "[Os dois] Havan",
+    "description": "[Os dois] Divida-Havan",
     "amount": 114.97,
     "date": "2026-09-10",
     "category": "Outros Gastos",
@@ -888,7 +912,7 @@
     "status": "Pendente"
   },
   {
-    "description": "[Os dois] Havan",
+    "description": "[Os dois] Divida-Havan",
     "amount": 114.97,
     "date": "2026-10-10",
     "category": "Outros Gastos",
@@ -896,7 +920,7 @@
     "status": "Pendente"
   },
   {
-    "description": "[Os dois] Havan",
+    "description": "[Os dois] Divida-Havan",
     "amount": 49.98,
     "date": "2026-11-10",
     "category": "Outros Gastos",
@@ -1102,22 +1126,6 @@
     "category": "Casa - Mercado / Compras",
     "type": "expense",
     "status": "Pago"
-  },
-  {
-    "description": "[Os dois] Mercado pago emprestimo",
-    "amount": 700,
-    "date": "2026-05-10",
-    "category": "Casa - Mercado / Compras",
-    "type": "expense",
-    "status": "Pendente"
-  },
-  {
-    "description": "[Os dois] Mercado pago emprestimo",
-    "amount": 700,
-    "date": "2026-06-10",
-    "category": "Casa - Mercado / Compras",
-    "type": "expense",
-    "status": "Pendente"
   },
   {
     "description": "[Os dois] Mãe-Promob",
@@ -1568,38 +1576,6 @@
     "status": "Pendente"
   },
   {
-    "description": "[Os dois] Padaria",
-    "amount": 47,
-    "date": "2026-02-10",
-    "category": "Casa - Mercado / Compras",
-    "type": "expense",
-    "status": "Pago"
-  },
-  {
-    "description": "[Os dois] Padaria",
-    "amount": 73,
-    "date": "2026-03-10",
-    "category": "Casa - Mercado / Compras",
-    "type": "expense",
-    "status": "Pago"
-  },
-  {
-    "description": "[Os dois] Padaria",
-    "amount": 107.43,
-    "date": "2026-04-10",
-    "category": "Casa - Mercado / Compras",
-    "type": "expense",
-    "status": "Pago"
-  },
-  {
-    "description": "[Os dois] Padaria",
-    "amount": 97.12,
-    "date": "2026-05-10",
-    "category": "Casa - Mercado / Compras",
-    "type": "expense",
-    "status": "Pendente"
-  },
-  {
     "description": "[Os dois] Sorteio",
     "amount": 7.98,
     "date": "2026-01-10",
@@ -1636,6 +1612,22 @@
     "amount": 13.75,
     "date": "2026-05-10",
     "category": "Cartão - Outros",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Divida-Mercado pago emprestimo",
+    "amount": 700,
+    "date": "2026-05-10",
+    "category": "Casa - Mercado / Compras",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Divida-Cartão de crédito-Mercado pago",
+    "amount": 1705,
+    "date": "2026-05-10",
+    "category": "Casa - Mercado / Compras",
     "type": "expense",
     "status": "Pendente"
   },

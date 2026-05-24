@@ -310,7 +310,7 @@ function Index() {
         const {
           data: { session },
         } = await supabase.auth.getSession();
-        if (session?.user && !localStorage.getItem("migracao_final_concluida_v5")) {
+        if (session?.user && !localStorage.getItem("migracao_final_concluida_v6")) {
           console.log("Iniciando migração automática agressiva...");
 
           // Apaga todos os dados existentes do usuário logado
@@ -344,7 +344,7 @@ function Index() {
             return;
           }
 
-          localStorage.setItem("migracao_final_concluida_v5", "true");
+          localStorage.setItem("migracao_final_concluida_v6", "true");
           alert(
             "SISTEMA ATUALIZADO! Dados falsos removidos e todas as transações reais da planilha carregadas com sucesso!",
           );
@@ -652,9 +652,14 @@ function Index() {
     .filter((t) => t.type === "income")
     .reduce((acc, curr) => acc + curr.amount, 0);
 
-  // Exclude master debts and credit card purchases from cash flow despesas
+  // Exclude pending master debts and credit card purchases from cash flow despesas.
+  // Paid debts (t.status === "Pago" / "paid") ARE included in despesas because they are already paid!
   const despesas = parsedTransactions
-    .filter((t) => t.type === "expense" && !isDebtTransaction(t) && t.cardId === null)
+    .filter((t) => 
+      t.type === "expense" && 
+      (!isDebtTransaction(t) || t.status === "Pago" || t.status === "paid") && 
+      t.cardId === null
+    )
     .reduce((acc, curr) => acc + curr.amount, 0);
 
   const saldo = receitas - despesas;
@@ -668,17 +673,25 @@ function Index() {
 
   const dividasTotais = cardsConfig.reduce((acc, card) => acc + getCardFaturaSum(card.name), 0);
 
-  // Custos Fixos vs Variáveis
+  // Custos Fixos vs Variáveis (excluindo dívidas pendentes)
   const fixedExpenses = parsedTransactions
-    .filter((t) => t.type === "expense" && !isDebtTransaction(t) && t.costType === "fixed")
+    .filter((t) => 
+      t.type === "expense" && 
+      (!isDebtTransaction(t) || t.status === "Pago" || t.status === "paid") && 
+      t.costType === "fixed"
+    )
     .reduce((acc, curr) => acc + curr.amount, 0);
 
   const variableExpenses = parsedTransactions
-    .filter((t) => t.type === "expense" && !isDebtTransaction(t) && t.costType === "variable")
+    .filter((t) => 
+      t.type === "expense" && 
+      (!isDebtTransaction(t) || t.status === "Pago" || t.status === "paid") && 
+      t.costType === "variable"
+    )
     .reduce((acc, curr) => acc + curr.amount, 0);
 
-  // Contas em aberto (qualquer situação com status Pendente)
-  const contasEmAberto = parsedTransactions.filter((t) => t.status === "Pendente");
+  // Contas em aberto (qualquer situação com status Pendente, excluindo dívidas que vão para o plano de quitação)
+  const contasEmAberto = parsedTransactions.filter((t) => t.status === "Pendente" && !isDebtTransaction(t));
 
   // Emergency reserves (configurable from state)
   const aportesReserva = transactions
