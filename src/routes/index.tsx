@@ -168,6 +168,42 @@ function Index() {
   const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState("2026-05");
 
+  // Emergency Reserve state variables (persisted in localStorage)
+  const [isEditReserveOpen, setIsEditReserveOpen] = useState(false);
+  const [reserveBase, setReserveBase] = useState(() => {
+    if (typeof window !== "undefined") {
+      return parseFloat(localStorage.getItem("reserva_base") || "0");
+    }
+    return 0;
+  });
+  const [reserveMeta, setReserveMeta] = useState(() => {
+    if (typeof window !== "undefined") {
+      return parseFloat(localStorage.getItem("reserva_meta") || "12000");
+    }
+    return 12000;
+  });
+  const [reserveBaseInput, setReserveBaseInput] = useState("");
+  const [reserveMetaInput, setReserveMetaInput] = useState("");
+
+  const handleOpenEditReserve = () => {
+    setReserveBaseInput(reserveBase.toString());
+    setReserveMetaInput(reserveMeta.toString());
+    setIsEditReserveOpen(true);
+  };
+
+  const handleSaveReserve = (e: React.FormEvent) => {
+    e.preventDefault();
+    const base = parseFloat(reserveBaseInput) || 0;
+    const meta = parseFloat(reserveMetaInput) || 0;
+    setReserveBase(base);
+    setReserveMeta(meta);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("reserva_base", base.toString());
+      localStorage.setItem("reserva_meta", meta.toString());
+    }
+    setIsEditReserveOpen(false);
+  };
+
   // Debt action states
   const [isAddDebtOpen, setIsAddDebtOpen] = useState(false);
   const [isEditDebtOpen, setIsEditDebtOpen] = useState(false);
@@ -497,13 +533,13 @@ function Index() {
     .reduce((acc, curr) => acc + curr.amount, 0);
   const dividasTotais = dividasNubank + dividasInter;
 
-  // Emergency reserves
+  // Emergency reserves (configurable from state)
   const aportesReserva = transactions
     .filter((t) => t.category === "Renda - Investimentos")
     .reduce((acc, curr) => acc + curr.amount, 0);
-  const totalReserva = 1500 + aportesReserva;
-  const metaReserva = 12000;
-  const pctReserva = Math.min(Math.round((totalReserva / metaReserva) * 100), 100);
+  const totalReserva = reserveBase + aportesReserva;
+  const metaReserva = reserveMeta;
+  const pctReserva = metaReserva > 0 ? Math.min(Math.round((totalReserva / metaReserva) * 100), 100) : 0;
 
   // Debt Payoff Plan logic
   const debtsList = transactions.filter(isDebtTransaction).map(parseDebt);
@@ -689,7 +725,14 @@ function Index() {
                 <div className="p-2.5 bg-emerald-50 rounded-xl text-emerald-600">
                   <Vault className="w-5 h-5" />
                 </div>
-                Reserva de Emergência
+                <span>Reserva de Emergência</span>
+                <button
+                  onClick={handleOpenEditReserve}
+                  className="p-1 text-slate-400 hover:text-[#1576D0] hover:bg-slate-100 rounded transition-colors"
+                  title="Editar Reserva"
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                </button>
               </h3>
               <p className="text-xs text-slate-500">Meta de proteção familiar contra imprevistos</p>
             </div>
@@ -1202,6 +1245,47 @@ function Index() {
               </DialogFooter>
             </form>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* DIALOG: Configurar/Editar Reserva de Emergência */}
+      <Dialog open={isEditReserveOpen} onOpenChange={setIsEditReserveOpen}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>Configurar Reserva de Emergência</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSaveReserve} className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label>Saldo Inicial da Reserva (R$)</Label>
+              <Input
+                type="number"
+                step="0.01"
+                required
+                value={reserveBaseInput}
+                onChange={(e) => setReserveBaseInput(e.target.value)}
+                placeholder="0.00"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Meta da Reserva (R$)</Label>
+              <Input
+                type="number"
+                step="0.01"
+                required
+                value={reserveMetaInput}
+                onChange={(e) => setReserveMetaInput(e.target.value)}
+                placeholder="12000.00"
+              />
+            </div>
+            <DialogFooter className="pt-4 gap-2 sm:gap-0">
+              <Button type="button" variant="ghost" onClick={() => setIsEditReserveOpen(false)}>
+                Cancelar
+              </Button>
+              <Button type="submit" className="bg-[#1576D0] hover:bg-[#0d5ca5] text-white">
+                Salvar Configurações
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </motion.div>
