@@ -91,7 +91,14 @@ function Index() {
         .order("date", { ascending: false });
 
       if (error) throw error;
-      if (data) setTransactions(data);
+      if (data) {
+        // Map database status ('paid' -> 'Pago', 'pending' -> 'Pendente')
+        const mapped = data.map((t: any) => ({
+          ...t,
+          status: t.status === "paid" ? "Pago" : t.status === "pending" ? "Pendente" : t.status,
+        }));
+        setTransactions(mapped);
+      }
     } catch (err: any) {
       console.error("Erro ao buscar transações:", err.message);
     } finally {
@@ -105,7 +112,7 @@ function Index() {
         const {
           data: { session },
         } = await supabase.auth.getSession();
-        if (session?.user && !localStorage.getItem("migracao_final_concluida_v3")) {
+        if (session?.user && !localStorage.getItem("migracao_final_concluida_v4")) {
           console.log("Iniciando migração automática agressiva...");
 
           // Apaga todos os dados existentes do usuário logado
@@ -119,7 +126,7 @@ function Index() {
             return;
           }
 
-          // Importa todos os dados do JSON
+          // Importa todos os dados do JSON, mapeando status para os valores válidos do banco ('paid', 'pending')
           const batch = importData.map((t) => ({
             user_id: session.user.id,
             type: t.type,
@@ -127,7 +134,7 @@ function Index() {
             amount: t.amount,
             date: t.date,
             category: t.category,
-            status: t.status,
+            status: t.status === "Pago" ? "paid" : t.status === "Pendente" ? "pending" : "pending",
           }));
 
           const { error: insError } = await supabase.from("transactions").insert(batch);
@@ -137,7 +144,7 @@ function Index() {
             return;
           }
 
-          localStorage.setItem("migracao_final_concluida_v3", "true");
+          localStorage.setItem("migracao_final_concluida_v4", "true");
           alert(
             "SISTEMA ATUALIZADO! Dados falsos removidos e todas as transações reais da planilha carregadas com sucesso!",
           );

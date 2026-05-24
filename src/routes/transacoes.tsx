@@ -82,7 +82,14 @@ function TransactionsPage() {
         .order("date", { ascending: false });
 
       if (error) throw error;
-      if (data) setTransactions(data);
+      if (data) {
+        // Map database status ('paid' -> 'Pago', 'pending' -> 'Pendente')
+        const mapped = data.map((t: any) => ({
+          ...t,
+          status: t.status === "paid" ? "Pago" : t.status === "pending" ? "Pendente" : t.status,
+        }));
+        setTransactions(mapped);
+      }
     } catch (err: any) {
       console.error("Erro ao carregar dados:", err.message);
     } finally {
@@ -112,7 +119,7 @@ function TransactionsPage() {
         amount: parseFloat(incomeAmount),
         date: incomeDate,
         category: incomeCategory,
-        status: "Pago",
+        status: "paid", // database-compatible status value
       });
 
       if (error) throw error;
@@ -151,7 +158,7 @@ function TransactionsPage() {
         amount: parseFloat(expenseAmount),
         date: expenseDate,
         category: expenseCategory,
-        status: expenseStatus, // "Pago" ou "Pendente"
+        status: expenseStatus === "Pago" ? "paid" : "pending", // database-compatible status value
       });
 
       if (error) throw error;
@@ -184,7 +191,7 @@ function TransactionsPage() {
       const { error } = await supabase
         .from("transactions")
         .update({
-          status: "Pago",
+          status: "paid", // database-compatible status value
           amount: parseFloat(payAmount),
           date: payDate,
         })

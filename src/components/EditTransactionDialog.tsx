@@ -40,7 +40,7 @@ export function EditTransactionDialog({
       setAmount(transaction.amount.toString());
       setDate(transaction.date);
       setCategory(transaction.category);
-      setStatus(transaction.status);
+      setStatus(transaction.status === "paid" ? "Pago" : transaction.status === "pending" ? "Pendente" : transaction.status);
 
       let desc = transaction.description;
       let resp = "Os dois";
@@ -76,7 +76,7 @@ export function EditTransactionDialog({
           amount: parseFloat(amount),
           date,
           category,
-          status,
+          status: status === "Pago" ? "paid" : "pending",
         })
         .eq("id", transaction.id);
 

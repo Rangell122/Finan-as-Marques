@@ -50,7 +50,7 @@ export function AddTransactionDialog({ onAdd }: { onAdd: () => void }) {
         amount: parseFloat(amount),
         date,
         category,
-        status,
+        status: status === "paid" ? "paid" : "pending",
       });
 
       if (error) throw error;

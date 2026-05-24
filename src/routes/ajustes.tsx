@@ -49,7 +49,7 @@ function Ajustes() {
             amount: t.amount,
             date: t.date,
             category: t.category,
-            status: t.status,
+            status: t.status === "Pago" ? "paid" : t.status === "Pendente" ? "pending" : "pending",
           });
           if (!error) successCount++;
         }

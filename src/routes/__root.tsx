@@ -166,6 +166,22 @@ function RootShell({ children }: { children: React.ReactNode }) {
     <html lang="pt-BR">
       <head>
         <HeadContent />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                  for (let registration of registrations) {
+                    registration.unregister().then(function() {
+                      console.log('SW unregistered successfully');
+                      window.location.reload();
+                    });
+                  }
+                });
+              }
+            `,
+          }}
+        />
       </head>
       <body className="antialiased selection:bg-primary/10">
         {children}
@@ -207,7 +223,7 @@ function RootComponent() {
 
       // Auto-import transactions wiping dummy data automatically once
       if (session?.user) {
-        if (!localStorage.getItem("data_imported_v2")) {
+        if (!localStorage.getItem("data_imported_v3")) {
           console.log("Wiping dummy data and auto-importing real data...");
           supabase
             .from("transactions")
@@ -222,10 +238,10 @@ function RootComponent() {
                   amount: t.amount,
                   date: t.date,
                   category: t.category,
-                  status: t.status,
+                  status: t.status === "Pago" ? "paid" : t.status === "Pendente" ? "pending" : "pending",
                 }));
                 await supabase.from("transactions").insert(batch);
-                localStorage.setItem("data_imported_v2", "true");
+                localStorage.setItem("data_imported_v3", "true");
                 alert(
                   "Dados falsos removidos! Seus 212 lançamentos reais foram importados automaticamente.",
                 );
@@ -495,7 +511,7 @@ function RootComponent() {
         amount: parseFloat(pendingTransaction.amount),
         date: pendingTransaction.date,
         category: pendingTransaction.category,
-        status: "Pago",
+        status: "paid",
       });
 
       if (error) throw error;
@@ -683,7 +699,7 @@ function RootComponent() {
                                 amount: t.amount,
                                 date: t.date,
                                 category: t.category,
-                                status: t.status,
+                                status: t.status === "Pago" ? "paid" : t.status === "Pendente" ? "pending" : "pending",
                               });
                               if (!error) successCount++;
                             }
