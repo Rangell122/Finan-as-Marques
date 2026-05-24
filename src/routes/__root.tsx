@@ -242,16 +242,17 @@ function RootComponent() {
   }, []);
 
   const parseResponsible = (description: string) => {
-    if (description.startsWith("[Jack] ")) {
-      return { name: "Jack", cleanDesc: description.replace("[Jack] ", "") };
+    const desc = String(description || "");
+    if (desc.startsWith("[Jack] ")) {
+      return { name: "Jack", cleanDesc: desc.replace("[Jack] ", "") };
     }
-    if (description.startsWith("[Rangel] ")) {
-      return { name: "Rangel", cleanDesc: description.replace("[Rangel] ", "") };
+    if (desc.startsWith("[Rangel] ")) {
+      return { name: "Rangel", cleanDesc: desc.replace("[Rangel] ", "") };
     }
-    if (description.startsWith("[Os dois] ")) {
-      return { name: "Os dois", cleanDesc: description.replace("[Os dois] ", "") };
+    if (desc.startsWith("[Os dois] ")) {
+      return { name: "Os dois", cleanDesc: desc.replace("[Os dois] ", "") };
     }
-    return { name: "Os dois", cleanDesc: description };
+    return { name: "Os dois", cleanDesc: desc };
   };
 
   // Parser local inteligente para entender os lançamentos digitados/falados

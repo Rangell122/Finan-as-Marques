@@ -104,19 +104,22 @@ function SummaryCard({
 }
 
 const isDebtTransaction = (t: any) => {
+  if (!t.description) return false;
+  const desc = String(t.description);
   return (
-    t.description.startsWith("DEBT_JSON:") ||
-    t.description.toLowerCase().includes("divida-") ||
-    t.description.toLowerCase().includes("dívida-") ||
-    t.description.toLowerCase().includes("divida ") ||
-    t.description.toLowerCase().includes("dívida ")
+    desc.startsWith("DEBT_JSON:") ||
+    desc.toLowerCase().includes("divida-") ||
+    desc.toLowerCase().includes("dívida-") ||
+    desc.toLowerCase().includes("divida ") ||
+    desc.toLowerCase().includes("dívida ")
   );
 };
 
 const parseDebt = (t: any) => {
-  if (t.description.startsWith("DEBT_JSON:")) {
+  const desc = String(t.description || "");
+  if (desc.startsWith("DEBT_JSON:")) {
     try {
-      const data = JSON.parse(t.description.substring(10));
+      const data = JSON.parse(desc.substring(10));
       return {
         id: t.id,
         name: data.name,
@@ -136,7 +139,7 @@ const parseDebt = (t: any) => {
     }
   }
 
-  let cleanName = t.description;
+  let cleanName = desc;
   if (cleanName.startsWith("[Os dois] ")) cleanName = cleanName.replace("[Os dois] ", "");
   if (cleanName.startsWith("[Jack] ")) cleanName = cleanName.replace("[Jack] ", "");
   if (cleanName.startsWith("[Rangel] ")) cleanName = cleanName.replace("[Rangel] ", "");
@@ -145,7 +148,7 @@ const parseDebt = (t: any) => {
 
   return {
     id: t.id,
-    name: cleanName,
+    name: cleanName || "Dívida Sem Nome",
     amount: t.amount,
     originalAmount: t.amount,
     renegotiated: false,
@@ -433,24 +436,25 @@ function Index() {
     `R$ ${val.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
 
   const parseResponsible = (description: string) => {
-    if (description.startsWith("DEBT_JSON:")) {
+    const desc = String(description || "");
+    if (desc.startsWith("DEBT_JSON:")) {
       try {
-        const data = JSON.parse(description.substring(10));
+        const data = JSON.parse(desc.substring(10));
         return { name: "Os dois", cleanDesc: `Dívida: ${data.name}` };
       } catch (e) {
         return { name: "Os dois", cleanDesc: "Dívida" };
       }
     }
-    if (description.startsWith("[Jack] ")) {
-      return { name: "Jack", cleanDesc: description.replace("[Jack] ", "") };
+    if (desc.startsWith("[Jack] ")) {
+      return { name: "Jack", cleanDesc: desc.replace("[Jack] ", "") };
     }
-    if (description.startsWith("[Rangel] ")) {
-      return { name: "Rangel", cleanDesc: description.replace("[Rangel] ", "") };
+    if (desc.startsWith("[Rangel] ")) {
+      return { name: "Rangel", cleanDesc: desc.replace("[Rangel] ", "") };
     }
-    if (description.startsWith("[Os dois] ")) {
-      return { name: "Os dois", cleanDesc: description.replace("[Os dois] ", "") };
+    if (desc.startsWith("[Os dois] ")) {
+      return { name: "Os dois", cleanDesc: desc.replace("[Os dois] ", "") };
     }
-    return { name: "Os dois", cleanDesc: description };
+    return { name: "Os dois", cleanDesc: desc };
   };
 
   // Get unique months from database to populate selector

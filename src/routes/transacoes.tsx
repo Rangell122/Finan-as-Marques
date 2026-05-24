@@ -247,32 +247,33 @@ function TransactionsPage() {
   };
 
   const parseResponsible = (description: string) => {
-    if (description.startsWith("DEBT_JSON:")) {
+    const desc = String(description || "");
+    if (desc.startsWith("DEBT_JSON:")) {
       try {
-        const data = JSON.parse(description.substring(10));
+        const data = JSON.parse(desc.substring(10));
         return { name: "Os dois", cleanDesc: `Dívida: ${data.name}` };
       } catch (e) {
         return { name: "Os dois", cleanDesc: "Dívida" };
       }
     }
-    if (description.startsWith("[Jack] ")) {
-      return { name: "Jack", cleanDesc: description.replace("[Jack] ", "") };
+    if (desc.startsWith("[Jack] ")) {
+      return { name: "Jack", cleanDesc: desc.replace("[Jack] ", "") };
     }
-    if (description.startsWith("[Rangel] ")) {
-      return { name: "Rangel", cleanDesc: description.replace("[Rangel] ", "") };
+    if (desc.startsWith("[Rangel] ")) {
+      return { name: "Rangel", cleanDesc: desc.replace("[Rangel] ", "") };
     }
-    if (description.startsWith("[Os dois] ")) {
-      return { name: "Os dois", cleanDesc: description.replace("[Os dois] ", "") };
+    if (desc.startsWith("[Os dois] ")) {
+      return { name: "Os dois", cleanDesc: desc.replace("[Os dois] ", "") };
     }
-    return { name: "Os dois", cleanDesc: description };
+    return { name: "Os dois", cleanDesc: desc };
   };
 
   const filteredTransactions = transactions
     .filter((t) => t.type === activeTab)
     .filter(
       (t) =>
-        t.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        t.category.toLowerCase().includes(searchTerm.toLowerCase()),
+        (t.description || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (t.category || "").toLowerCase().includes(searchTerm.toLowerCase()),
     );
 
   return (

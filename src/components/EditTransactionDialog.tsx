@@ -42,7 +42,7 @@ export function EditTransactionDialog({
       setCategory(transaction.category);
       setStatus(transaction.status === "paid" ? "Pago" : transaction.status === "pending" ? "Pendente" : transaction.status);
 
-      let desc = transaction.description;
+      let desc = transaction.description || "";
       let resp = "Os dois";
 
       if (desc.startsWith("[Jack] ")) {
