@@ -24,6 +24,7 @@ import {
   ArrowDownRight,
   Check,
   AlertTriangle,
+  Pencil,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
@@ -38,6 +39,7 @@ import {
 } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/lib/supabase";
+import { EditTransactionDialog } from "@/components/EditTransactionDialog";
 
 export const Route = createFileRoute("/transacoes")({
   component: TransactionsPage,
@@ -69,6 +71,7 @@ function TransactionsPage() {
   const [payAmount, setPayAmount] = useState("");
   const [payDate, setPayDate] = useState(new Date().toISOString().split("T")[0]);
 
+  const [editTransaction, setEditTransaction] = useState<any>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
   const fetchTransactions = async () => {
@@ -567,6 +570,7 @@ function TransactionsPage() {
                       activeTab={activeTab}
                       handleOpenPayModal={handleOpenPayModal}
                       handleDelete={handleDelete}
+                      handleEdit={(t: any) => setEditTransaction(t)}
                       actionLoading={actionLoading}
                       isOverdue={isOverdue}
                       parseResponsible={parseResponsible}
@@ -598,6 +602,7 @@ function TransactionsPage() {
                 activeTab={activeTab}
                 handleOpenPayModal={handleOpenPayModal}
                 handleDelete={handleDelete}
+                handleEdit={(t: any) => setEditTransaction(t)}
                 actionLoading={actionLoading}
                 isOverdue={isOverdue}
                 parseResponsible={parseResponsible}
@@ -691,6 +696,14 @@ function TransactionsPage() {
           )}
         </DialogContent>
       </Dialog>
+      <EditTransactionDialog
+        transaction={editTransaction}
+        open={!!editTransaction}
+        setOpen={(open) => {
+          if (!open) setEditTransaction(null);
+        }}
+        onEdit={fetchTransactions}
+      />
     </motion.div>
   );
 }
@@ -700,6 +713,7 @@ function DesktopTransactionRow({
   activeTab,
   handleOpenPayModal,
   handleDelete,
+  handleEdit,
   actionLoading,
   isOverdue,
   parseResponsible,
@@ -787,6 +801,15 @@ function DesktopTransactionRow({
           <Button
             variant="ghost"
             size="icon"
+            onClick={() => handleEdit(t)}
+            disabled={actionLoading}
+            className="text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg w-8 h-8"
+          >
+            <Pencil className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => handleDelete(t.id)}
             disabled={actionLoading}
             className="text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg w-8 h-8"
@@ -804,6 +827,7 @@ function MobileTransactionCard({
   activeTab,
   handleOpenPayModal,
   handleDelete,
+  handleEdit,
   actionLoading,
   isOverdue,
   parseResponsible,
@@ -885,6 +909,15 @@ function MobileTransactionCard({
               <Check className="w-3.5 h-3.5" /> Pagar
             </Button>
           )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleEdit(t)}
+            disabled={actionLoading}
+            className="text-slate-400 hover:text-blue-600 hover:bg-blue-50 flex items-center gap-1.5 font-bold text-xs px-2.5 h-8 rounded-lg"
+          >
+            <Pencil className="w-3.5 h-3.5" />
+          </Button>
           <Button
             variant="ghost"
             size="sm"
