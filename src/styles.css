@@ -63,30 +63,30 @@
 
 :root {
   --radius: 1rem;
-  --background: #071a3d; /* Azul Marinho Profundo */
-  --foreground: #f8fafc; /* Branco Neutro */
-  --card: #f8fafc; /* Cards brancos */
+  --background: #ffffff; /* Fundo predominantemente branco */
+  --foreground: #0b1120; /* Texto escuro */
+  --card: #ffffff; /* Cards brancos */
   --card-foreground: #0b1120; /* Texto escuro no card */
-  --popover: #f8fafc;
+  --popover: #ffffff;
   --popover-foreground: #0b1120;
 
   --primary: #1576D0; /* Azul Royal Premium */
   --primary-foreground: #ffffff; /* Texto branco no botão azul */
 
-  --secondary: #0e2c63; /* Navy Soft */
-  --secondary-foreground: #f8fafc;
+  --secondary: #f1f5f9; /* Slate Claro */
+  --secondary-foreground: #0b1120;
 
-  --muted: #d9e1ec; /* Cinza Claro */
-  --muted-foreground: #94a3b8; /* Cinza Médio */
+  --muted: #f1f5f9; /* Cinza Muito Claro */
+  --muted-foreground: #64748b; /* Cinza Médio */
 
-  --accent: #3b82f6; /* Azul Claro Accent */
-  --accent-foreground: #ffffff;
+  --accent: #e0f2fe; /* Azul Claro Accent */
+  --accent-foreground: #1576D0;
 
   --destructive: #ef4444; /* Vermelho Despesa */
-  --destructive-foreground: #f8fafc;
+  --destructive-foreground: #ffffff;
 
-  --border: #d9e1ec; /* Cinza Claro */
-  --input: #d9e1ec;
+  --border: #e2e8f0; /* Cinza Claro Borda */
+  --input: #e2e8f0;
   --ring: #1576D0;
 
   --chart-1: #22c55e; /* Verde Receita */
@@ -95,20 +95,20 @@
   --chart-4: #3b82f6; /* Azul Info */
   --chart-5: #1576D0; /* Azul Meta */
 
-  --sidebar: #071a3d;
-  --sidebar-foreground: #f8fafc;
+  --sidebar: #f8fafc; /* Barra lateral clara */
+  --sidebar-foreground: #334155;
   --sidebar-primary: #1576D0;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #0e2c63;
-  --sidebar-accent-foreground: #f8fafc;
-  --sidebar-border: #0e2c63;
+  --sidebar-accent: #e2e8f0;
+  --sidebar-accent-foreground: #0b1120;
+  --sidebar-border: #e2e8f0;
   --sidebar-ring: #1576D0;
 }
 
 .dark {
-  --background: #071a3d;
-  --foreground: #f8fafc;
-  --card: #0e2c63; /* No dark mode browser, os cards podem ficar Navy Soft */
+  --background: #071a3d; /* Azul Marinho Profundo */
+  --foreground: #f8fafc; /* Branco Neutro */
+  --card: #0e2c63; /* Cards Navy Soft no modo escuro */
   --card-foreground: #f8fafc;
   --popover: #0e2c63;
   --popover-foreground: #f8fafc;
@@ -143,5 +143,6 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 }

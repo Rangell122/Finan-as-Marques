@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
@@ -12,6 +12,10 @@ import {
   Tooltip,
   ResponsiveContainer,
   Cell,
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
 } from "recharts";
 import {
   ArrowUpRight,
@@ -32,6 +36,10 @@ import {
   DollarSign,
   AlertCircle,
   Calendar,
+  Eye,
+  EyeOff,
+  Maximize2,
+  Building2,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { supabase } from "@/lib/supabase";
@@ -81,6 +89,7 @@ function SummaryCard({
   bgClass,
   subtitle,
   onClick,
+  isColored = false,
 }: {
   title: string;
   value: string;
@@ -89,23 +98,28 @@ function SummaryCard({
   bgClass: string;
   subtitle?: string;
   onClick?: () => void;
+  isColored?: boolean;
 }) {
   return (
     <Card 
       onClick={onClick}
-      className={`hover:shadow-lg transition-all duration-300 border border-border bg-white ${
+      className={`hover:shadow-lg transition-all duration-300 border ${
+        isColored 
+          ? `${bgClass} border-transparent text-white` 
+          : "border-border bg-white dark:bg-card text-foreground"
+      } ${
         onClick ? "cursor-pointer hover:scale-[1.02] active:scale-[0.98]" : ""
       }`}
     >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-semibold text-slate-500">{title}</CardTitle>
-        <div className={`p-2 rounded-xl ${bgClass}`}>
-          <Icon className={`h-5 w-5 ${color}`} />
+        <CardTitle className={`text-sm font-semibold ${isColored ? "text-white/80" : "text-slate-500"}`}>{title}</CardTitle>
+        <div className={`p-2 rounded-xl ${isColored ? "bg-white/20 text-white" : bgClass}`}>
+          <Icon className={`h-5 w-5 ${isColored ? "text-white" : color}`} />
         </div>
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold text-[#0B1120]">{value}</div>
-        {subtitle && <p className="text-xs text-slate-500 mt-1">{subtitle}</p>}
+        <div className={`text-2xl font-bold ${isColored ? "text-white" : "text-[#0B1120] dark:text-white"}`}>{value}</div>
+        {subtitle && <p className={`text-xs mt-1 ${isColored ? "text-white/70" : "text-slate-500"}`}>{subtitle}</p>}
       </CardContent>
     </Card>
   );
@@ -225,12 +239,84 @@ const parseDebt = (t: any) => {
 function Index() {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedMonth, setSelectedMonth] = useState("2026-05");
+  
+  // Mês selecionado - sincronizado com evento global
+  const [selectedMonth, setSelectedMonth] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("selected_month") || "2026-05";
+    }
+    return "2026-05";
+  });
+
+  // Query de busca - sincronizada com evento global
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Visibilidade do saldo
+  const [showBalance, setShowBalance] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("show_balance") !== "false";
+    }
+    return true;
+  });
+
+  const toggleShowBalance = () => {
+    setShowBalance(prev => {
+      const newVal = !prev;
+      localStorage.setItem("show_balance", newVal ? "true" : "false");
+      return newVal;
+    });
+  };
+
+  // Modal de saldo detalhado
+  const [isSaldoModalOpen, setIsSaldoModalOpen] = useState(false);
+
+  // Período para o gráfico de evolução de despesas
+  const [expensePeriod, setExpensePeriod] = useState<"7days" | "week" | "month">("month");
+
+  // Contas
+  const [accounts, setAccounts] = useState<any[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("contas_config");
+        if (stored) return JSON.parse(stored);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return [
+      { id: "carteira", name: "Minha Carteira", balance: 100, type: "Dinheiro", color: "emerald" },
+      { id: "corrente", name: "Minha Conta Corrente", balance: 1500, type: "Conta Corrente", color: "blue" },
+      { id: "investimentos", name: "Investimentos", balance: 12000, type: "Investimentos", color: "purple" }
+    ];
+  });
+
+  useEffect(() => {
+    const handleMonth = (e: any) => setSelectedMonth(e.detail);
+    const handleSearch = (e: any) => setSearchQuery(e.detail);
+    const handleAccounts = () => {
+      try {
+        const stored = localStorage.getItem("contas_config");
+        if (stored) setAccounts(JSON.parse(stored));
+      } catch (err) {}
+    };
+
+    window.addEventListener("selectedMonthChanged", handleMonth);
+    window.addEventListener("searchQueryChanged", handleSearch);
+    window.addEventListener("accountsChanged", handleAccounts);
+
+    return () => {
+      window.removeEventListener("selectedMonthChanged", handleMonth);
+      window.removeEventListener("searchQueryChanged", handleSearch);
+      window.removeEventListener("accountsChanged", handleAccounts);
+    };
+  }, []);
+
   const [cardDetailModal, setCardDetailModal] = useState<{
     isOpen: boolean;
     title: string;
     transactions: any[];
     isBalance?: boolean;
+    isAccounts?: boolean;
   } | null>(null);
 
   // Emergency Reserve state variables (persisted in localStorage)
@@ -660,14 +746,74 @@ function Index() {
     };
   });
 
-  // General calculations for the selected month
-  const receitas = parsedTransactions
+  // Calculadora de saldos das contas dinâmicas (cumulativo desde o saldo inicial)
+  const getAccountCalculatedBalance = (acc: any) => {
+    const accountTx = transactions.filter((t) => {
+      // Dívidas não pagas do plano de quitação não mexem no caixa real
+      if (isDebtTransaction(t) && t.status !== "Pago" && t.status !== "paid") return false;
+      try {
+        if (t.description.includes("META_JSON:")) {
+          const meta = JSON.parse(t.description.split("META_JSON:")[1]);
+          return meta.accountId === acc.id;
+        }
+      } catch (e) {}
+      if (acc.id === "corrente") {
+        return !t.description.includes("accountId");
+      }
+      return false;
+    });
+
+    const incomes = accountTx.filter(t => t.type === "income").reduce((s, t) => s + t.amount, 0);
+    const expenses = accountTx.filter(t => t.type === "expense").reduce((s, t) => s + t.amount, 0);
+    return acc.balance + incomes - expenses;
+  };
+
+  const accountBalancesSum = accounts.reduce((sum, acc) => sum + getAccountCalculatedBalance(acc), 0);
+
+  // Cálculos do Saldo Total (Efetivado, Previsto, Total)
+  const totalEfetivado = accounts.reduce((sum, acc) => {
+    const accountTx = transactions.filter((t) => {
+      if (t.status !== "Pago" && t.status !== "paid") return false;
+      try {
+        if (t.description.includes("META_JSON:")) {
+          const meta = JSON.parse(t.description.split("META_JSON:")[1]);
+          return meta.accountId === acc.id;
+        }
+      } catch (e) {}
+      if (acc.id === "corrente") {
+        return !t.description.includes("accountId");
+      }
+      return false;
+    });
+    const incomes = accountTx.filter(t => t.type === "income").reduce((s, t) => s + t.amount, 0);
+    const expenses = accountTx.filter(t => t.type === "expense").reduce((s, t) => s + t.amount, 0);
+    return sum + acc.balance + incomes - expenses;
+  }, 0);
+
+  const totalPrevisto = transactions.filter(t => t.status === "Pendente" || t.status === "pending").reduce((sum, t) => {
+    const isInc = t.type === "income";
+    return sum + (isInc ? t.amount : -t.amount);
+  }, 0);
+
+  const totalSaldoGeral = totalEfetivado + totalPrevisto;
+
+  // Filtrar por busca (searchQuery) nas transações do mês
+  const searchedTransactions = parsedTransactions.filter((t) => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      t.cleanDesc.toLowerCase().includes(query) ||
+      t.category.toLowerCase().includes(query) ||
+      (t.amount.toString().includes(query))
+    );
+  });
+
+  // General calculations for the selected month (respecting search query)
+  const receitas = searchedTransactions
     .filter((t) => t.type === "income")
     .reduce((acc, curr) => acc + curr.amount, 0);
 
-  // Exclude pending master debts and credit card purchases from cash flow despesas.
-  // Paid debts (t.status === "Pago" / "paid") ARE included in despesas because they are already paid!
-  const despesas = parsedTransactions
+  const despesas = searchedTransactions
     .filter((t) => 
       t.type === "expense" && 
       (!isDebtTransaction(t) || t.status === "Pago" || t.status === "paid") && 
@@ -679,15 +825,15 @@ function Index() {
 
   // Dynamic credit card fatura calculation
   const getCardFaturaSum = (cardName: string) => {
-    return parsedTransactions
+    return searchedTransactions
       .filter((t) => t.type === "expense" && t.cardId === cardName)
       .reduce((acc, curr) => acc + curr.amount, 0);
   };
 
   const dividasTotais = cardsConfig.reduce((acc, card) => acc + getCardFaturaSum(card.name), 0);
 
-  // Custos Fixos vs Variáveis (excluindo dívidas pendentes)
-  const fixedExpenses = parsedTransactions
+  // Custos Fixos vs Variáveis
+  const fixedExpenses = searchedTransactions
     .filter((t) => 
       t.type === "expense" && 
       (!isDebtTransaction(t) || t.status === "Pago" || t.status === "paid") && 
@@ -695,7 +841,7 @@ function Index() {
     )
     .reduce((acc, curr) => acc + curr.amount, 0);
 
-  const variableExpenses = parsedTransactions
+  const variableExpenses = searchedTransactions
     .filter((t) => 
       t.type === "expense" && 
       (!isDebtTransaction(t) || t.status === "Pago" || t.status === "paid") && 
@@ -703,10 +849,10 @@ function Index() {
     )
     .reduce((acc, curr) => acc + curr.amount, 0);
 
-  // Contas em aberto (qualquer situação com status Pendente, excluindo dívidas que vão para o plano de quitação)
-  const contasEmAberto = parsedTransactions.filter((t) => t.status === "Pendente" && !isDebtTransaction(t));
+  // Contas em aberto
+  const contasEmAberto = searchedTransactions.filter((t) => t.status === "Pendente" && !isDebtTransaction(t));
 
-  // Emergency reserves (configurable from state)
+  // Aportes reserva
   const aportesReserva = transactions
     .filter((t) => t.category === "Renda - Investimentos")
     .reduce((acc, curr) => acc + curr.amount, 0);
@@ -714,7 +860,7 @@ function Index() {
   const metaReserva = reserveMeta;
   const pctReserva = metaReserva > 0 ? Math.min(Math.round((totalReserva / metaReserva) * 100), 100) : 0;
 
-  // Debt Payoff Plan logic
+  // Plano de quitação de dívidas
   const debtsList = transactions.filter(isDebtTransaction).map(parseDebt);
   const totalDividaOriginal = debtsList.reduce((acc, curr) => acc + curr.originalAmount, 0);
   const totalDividaRestante = debtsList.reduce((acc, curr) => {
@@ -752,6 +898,90 @@ function Index() {
     const mName = MONTH_NAMES[parseInt(m, 10) - 1] || m;
     return `${mName} ${y}`;
   };
+
+  // Helper to aggregate line chart data based on period
+  const getLineChartData = () => {
+    const expenses = parsedTransactions.filter(
+      (t) => t.type === "expense" && (!isDebtTransaction(t) || t.status === "Pago" || t.status === "paid")
+    );
+
+    const dailyMap: { [day: number]: number } = {};
+    expenses.forEach((t) => {
+      const day = new Date(t.date).getUTCDate();
+      dailyMap[day] = (dailyMap[day] || 0) + t.amount;
+    });
+
+    const today = new Date();
+    const currentMonthStr = today.toISOString().substring(0, 7);
+    
+    let daysArray: number[] = [];
+    const [year, month] = selectedMonth.split("-").map(Number);
+    const totalDays = new Date(year, month, 0).getDate();
+
+    if (expensePeriod === "7days") {
+      let endDay = totalDays;
+      if (selectedMonth === currentMonthStr) {
+        endDay = today.getDate();
+      }
+      const startDay = Math.max(1, endDay - 6);
+      for (let d = startDay; d <= endDay; d++) {
+        daysArray.push(d);
+      }
+    } else if (expensePeriod === "week") {
+      let endDay = totalDays;
+      if (selectedMonth === currentMonthStr) {
+        endDay = today.getDate();
+      }
+      const startDay = Math.max(1, endDay - (today.getDay() || 7) + 1);
+      for (let d = startDay; d <= endDay; d++) {
+        daysArray.push(d);
+      }
+    } else {
+      for (let d = 1; d <= totalDays; d++) {
+        daysArray.push(d);
+      }
+    }
+
+    return daysArray.map((day) => {
+      const dateStr = `${day}/${selectedMonth.split("-")[1]}`;
+      return {
+        name: dateStr,
+        value: dailyMap[day] || 0,
+      };
+    });
+  };
+
+  // Helper to aggregate donut chart data
+  const getDonutChartData = () => {
+    const dataMap: { [cat: string]: number } = {};
+    parsedTransactions
+      .filter((t) => t.type === "expense" && (!isDebtTransaction(t) || t.status === "Pago" || t.status === "paid"))
+      .forEach((t) => {
+        dataMap[t.category] = (dataMap[t.category] || 0) + t.amount;
+      });
+
+    const colors = [
+      "#3b82f6", // Blue
+      "#10b981", // Emerald
+      "#ef4444", // Red
+      "#f59e0b", // Amber
+      "#8b5cf6", // Purple
+      "#ec4899", // Pink
+      "#06b6d4", // Cyan
+      "#14b8a6", // Teal
+    ];
+
+    return Object.entries(dataMap)
+      .map(([name, value], idx) => ({
+        name,
+        value,
+        color: colors[idx % colors.length],
+      }))
+      .sort((a, b) => b.value - a.value);
+  };
+
+  const totalGastoMes = despesas + dividasTotais;
+  const balancoMes = receitas - totalGastoMes;
 
   // Automated tips
   const getFinancialTip = () => {
@@ -792,31 +1022,55 @@ function Index() {
       transition={{ duration: 0.5 }}
       className="p-4 md:p-8 space-y-8 bg-background min-h-screen"
     >
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-white">Painel Familiar</h1>
-          <p className="text-slate-500 text-sm">
-            Resumo financeiro para controle de gastos e acúmulo de riqueza.
-          </p>
+      {/* Header and Saldo Total */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          {/* Widget de Saldo */}
+          <div 
+            onClick={() => setIsSaldoModalOpen(true)}
+            className="group cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/40 p-4 rounded-2xl border border-border bg-white dark:bg-card transition-all inline-flex flex-col shadow-sm select-none"
+          >
+            <span className="text-[10px] text-muted-foreground font-extrabold uppercase tracking-wider flex items-center gap-2">
+              Saldo total
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleShowBalance();
+                }}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 focus:outline-none"
+              >
+                {showBalance ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+              </button>
+            </span>
+            <span className="text-3xl font-extrabold text-foreground mt-1.5 leading-none">
+              {showBalance ? formatCurrency(totalSaldoGeral) : "••••••"}
+            </span>
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">Painel Familiar</h1>
+            <p className="text-muted-foreground text-xs">
+              Resumo financeiro para controle de gastos e acúmulo de riqueza.
+            </p>
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           {/* Month Selector */}
           <div className="flex items-center gap-2">
             <Calendar className="w-5 h-5 text-[#1576D0]" />
             <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-              <SelectTrigger className="w-[180px] bg-white border border-border text-slate-800 font-semibold rounded-xl shadow-sm h-11">
+              <SelectTrigger className="w-[180px] bg-white dark:bg-card border border-border text-foreground font-semibold rounded-xl shadow-sm h-11">
                 <SelectValue placeholder="Selecione o mês" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-card border border-border text-foreground">
                 {months.length > 0 ? (
                   months.map((m) => (
-                    <SelectItem key={m} value={m} className="font-medium text-slate-700">
+                    <SelectItem key={m} value={m} className="font-medium">
                       {formatMonthName(m)}
                     </SelectItem>
                   ))
                 ) : (
-                  <SelectItem value="2026-05" className="font-medium text-slate-700">
+                  <SelectItem value="2026-05" className="font-medium">
                     Maio 2026
                   </SelectItem>
                 )}
@@ -828,146 +1082,247 @@ function Index() {
       </div>
 
       {/* Cartão de Dicas Financeiras Automatizado */}
-      <Card className={`border border-border/60 shadow-sm p-5 bg-white relative overflow-hidden`}>
+      <Card className="border border-border/60 shadow-sm p-5 bg-white dark:bg-card relative overflow-hidden">
         <div className="flex gap-4 items-start">
           <div
             className={`p-3 rounded-2xl ${
               tip.type === "danger"
-                ? "bg-red-50 text-red-600"
+                ? "bg-red-50 dark:bg-red-950/20 text-red-650"
                 : tip.type === "warning"
-                  ? "bg-amber-50 text-amber-600"
+                  ? "bg-amber-50 dark:bg-amber-950/20 text-amber-650"
                   : tip.type === "info"
-                    ? "bg-blue-50 text-[#1576D0]"
-                    : "bg-emerald-100 text-emerald-700"
+                    ? "bg-blue-50 dark:bg-blue-950/20 text-[#1576D0]"
+                    : "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-650"
             }`}
           >
             <Sparkles className="w-6 h-6" />
           </div>
           <div className="space-y-1">
-            <h3 className="font-bold text-lg text-[#0B1120] flex items-center gap-1.5">
+            <h3 className="font-bold text-lg text-foreground flex items-center gap-1.5">
               {tip.title}
             </h3>
-            <p className="text-sm text-slate-600 leading-relaxed max-w-3xl">{tip.text}</p>
+            <p className="text-sm text-muted-foreground leading-relaxed max-w-3xl">{tip.text}</p>
           </div>
         </div>
       </Card>
 
-      {/* Cartões de Resumo */}
+      {/* Cartões de Resumo (Quatro Cartões Coloridos) */}
       <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Azul: Saldo em contas */}
         <SummaryCard
-          title="Saldo Atual"
-          value={formatCurrency(saldo)}
+          title="Saldo em Contas"
+          value={formatCurrency(accountBalancesSum)}
           icon={Coins}
-          color={saldo >= 0 ? "text-emerald-600" : "text-rose-600"}
-          bgClass={saldo >= 0 ? "bg-emerald-50" : "bg-rose-50"}
-          subtitle="Sobra líquida no caixa"
+          color="text-white"
+          bgClass="bg-blue-600 dark:bg-blue-700"
+          subtitle="Soma de todos os saldos"
+          isColored={true}
           onClick={() => {
-            const balanceItems = parsedTransactions.filter((t) => 
-              t.type === "income" || 
-              (t.type === "expense" && (!isDebtTransaction(t) || t.status === "Pago" || t.status === "paid") && t.cardId === null)
-            );
             setCardDetailModal({
               isOpen: true,
-              title: "Detalhamento de Saldo Atual - " + formatMonthName(selectedMonth),
-              transactions: balanceItems,
-              isBalance: true,
+              title: "Detalhamento de Saldo em Contas",
+              transactions: [],
+              isAccounts: true,
             });
           }}
         />
+        {/* Verde: Total recebido */}
         <SummaryCard
-          title="Receitas (Entradas)"
+          title="Total Recebido"
           value={formatCurrency(receitas)}
           icon={ArrowUpRight}
-          color="text-emerald-600"
-          bgClass="bg-emerald-50"
-          subtitle="Tudo que entrou no mês"
+          color="text-white"
+          bgClass="bg-emerald-600 dark:bg-emerald-700"
+          subtitle="Total de receitas do mês"
+          isColored={true}
           onClick={() => {
-            const incomeItems = parsedTransactions.filter((t) => t.type === "income");
             setCardDetailModal({
               isOpen: true,
-              title: "Detalhamento de Receitas (Entradas) - " + formatMonthName(selectedMonth),
-              transactions: incomeItems,
+              title: "Detalhamento de Receitas - " + formatMonthName(selectedMonth),
+              transactions: parsedTransactions.filter((t) => t.type === "income"),
             });
           }}
         />
+        {/* Vermelho: Total gasto */}
         <SummaryCard
-          title="Despesas (Saídas)"
-          value={formatCurrency(despesas)}
+          title="Total Gasto"
+          value={formatCurrency(totalGastoMes)}
           icon={ArrowDownLeft}
-          color="text-rose-600"
-          bgClass="bg-rose-50"
-          subtitle="Tudo que saiu no mês"
+          color="text-white"
+          bgClass="bg-rose-600 dark:bg-rose-700"
+          subtitle="Despesas em dinheiro + cartões"
+          isColored={true}
           onClick={() => {
-            const expenseItems = parsedTransactions.filter((t) => 
-              t.type === "expense" && 
-              (!isDebtTransaction(t) || t.status === "Pago" || t.status === "paid") && 
-              t.cardId === null
-            );
             setCardDetailModal({
               isOpen: true,
-              title: "Detalhamento de Despesas (Saídas) - " + formatMonthName(selectedMonth),
-              transactions: expenseItems,
+              title: "Detalhamento de Gastos - " + formatMonthName(selectedMonth),
+              transactions: parsedTransactions.filter((t) => 
+                t.type === "expense" && (!isDebtTransaction(t) || t.status === "Pago" || t.status === "paid")
+              ),
             });
           }}
         />
+        {/* Amarelo: Balanço das despesas */}
         <SummaryCard
-          title="Uso de Cartão de Crédito"
-          value={formatCurrency(dividasTotais)}
-          icon={CreditCard}
-          color="text-amber-600"
-          bgClass="bg-amber-50"
-          subtitle="Faturas de Nubank + Inter"
+          title="Balanço das Despesas"
+          value={formatCurrency(balancoMes)}
+          icon={Scale}
+          color="text-white"
+          bgClass="bg-amber-500 dark:bg-amber-600"
+          subtitle="Resultado líquido no mês"
+          isColored={true}
           onClick={() => {
-            const cardItems = parsedTransactions.filter((t) => 
-              t.type === "expense" && t.cardId !== null
-            );
             setCardDetailModal({
               isOpen: true,
-              title: "Detalhamento de Uso de Cartão de Crédito - " + formatMonthName(selectedMonth),
-              transactions: cardItems,
+              title: "Balanço Mensal - " + formatMonthName(selectedMonth),
+              transactions: parsedTransactions.filter((t) => 
+                t.type === "income" || 
+                (t.type === "expense" && (!isDebtTransaction(t) || t.status === "Pago" || t.status === "paid"))
+              ),
+              isBalance: true,
             });
           }}
         />
       </div>
 
+      {/* Gráficos e Visões Gerais */}
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
+        {/* Evolução das Despesas (Line Chart) */}
+        <Card className="p-6 border border-border/80 shadow-sm bg-white dark:bg-card rounded-2xl w-full min-w-0 overflow-hidden flex flex-col justify-between">
+          <div>
+            <div className="flex justify-between items-center mb-6 flex-wrap gap-2">
+              <h2 className="text-lg font-bold text-foreground">Evolução das Despesas</h2>
+              <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+                <Button
+                  variant={expensePeriod === "7days" ? "default" : "ghost"}
+                  size="sm"
+                  className="h-8 text-[10px] font-bold rounded-lg px-2"
+                  onClick={() => setExpensePeriod("7days")}
+                >
+                  7 dias
+                </Button>
+                <Button
+                  variant={expensePeriod === "week" ? "default" : "ghost"}
+                  size="sm"
+                  className="h-8 text-[10px] font-bold rounded-lg px-2"
+                  onClick={() => setExpensePeriod("week")}
+                >
+                  Semana
+                </Button>
+                <Button
+                  variant={expensePeriod === "month" ? "default" : "ghost"}
+                  size="sm"
+                  className="h-8 text-[10px] font-bold rounded-lg px-2"
+                  onClick={() => setExpensePeriod("month")}
+                >
+                  Mês
+                </Button>
+              </div>
+            </div>
+            <div className="h-[260px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={getLineChartData()}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" dark:stroke="#1e293b" vertical={false} />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 9 }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9 }} />
+                  <Tooltip formatter={(value: any) => formatCurrency(Number(value))} />
+                  <Line
+                    type="monotone"
+                    dataKey="value"
+                    stroke="#ef4444"
+                    strokeWidth={2.5}
+                    dot={{ r: 3 }}
+                    activeDot={{ r: 5 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </Card>
+
+        {/* Contas por Categoria (Pie/Donut Chart) */}
+        <Card className="p-6 border border-border/80 shadow-sm bg-white dark:bg-card rounded-2xl w-full min-w-0 overflow-hidden flex flex-col justify-between">
+          <div>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-lg font-bold text-foreground">Contas por Categoria</h2>
+              <Link to="/graficos">
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                  <Maximize2 className="w-4 h-4" />
+                </Button>
+              </Link>
+            </div>
+            <div className="h-[200px] flex items-center justify-center">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={getDonutChartData()}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={50}
+                    outerRadius={75}
+                    paddingAngle={3}
+                    dataKey="value"
+                  >
+                    {getDonutChartData().map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value: any) => formatCurrency(Number(value))} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+          {/* Legend */}
+          <div className="grid grid-cols-2 gap-2 mt-4 max-h-[80px] overflow-y-auto pr-1">
+            {getDonutChartData().slice(0, 4).map((entry) => (
+              <div key={entry.name} className="flex items-center gap-2 text-[10px] font-semibold text-muted-foreground truncate">
+                <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: entry.color }} />
+                <span className="truncate">{entry.name}</span>
+                <span className="ml-auto font-bold text-foreground">{formatCurrency(entry.value)}</span>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+
       {/* Metas da Família (Reserva e Quitação de Dívidas) */}
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
         {/* Reserva de Emergência */}
-        <Card className="border border-border/80 p-6 bg-white rounded-2xl shadow-sm">
+        <Card className="border border-border/80 p-6 bg-white dark:bg-card rounded-2xl shadow-sm">
           <div className="flex justify-between items-start mb-4">
             <div className="space-y-1">
-              <h3 className="font-bold text-lg text-[#0B1120] flex items-center gap-3">
-                <div className="p-2.5 bg-emerald-50 rounded-xl text-emerald-600">
+              <h3 className="font-bold text-lg text-foreground flex items-center gap-3">
+                <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/20 rounded-xl text-emerald-600">
                   <Vault className="w-5 h-5" />
                 </div>
                 <span>Reserva de Emergência</span>
                 <button
                   onClick={handleOpenEditReserve}
-                  className="p-1 text-slate-400 hover:text-[#1576D0] hover:bg-slate-100 rounded transition-colors"
+                  className="p-1 text-slate-400 hover:text-[#1576D0] hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"
                   title="Editar Reserva"
                 >
                   <Pencil className="w-3.5 h-3.5" />
                 </button>
               </h3>
-              <p className="text-xs text-slate-500">Meta de proteção familiar contra imprevistos</p>
+              <p className="text-xs text-muted-foreground">Meta de proteção familiar contra imprevistos</p>
             </div>
             <div className="text-right">
-              <span className="font-extrabold text-lg text-[#0B1120]">
+              <span className="font-extrabold text-lg text-foreground">
                 {formatCurrency(totalReserva)}
               </span>
-              <span className="text-xs text-slate-500 block">
+              <span className="text-xs text-muted-foreground block mt-0.5">
                 Meta: {formatCurrency(metaReserva)}
               </span>
             </div>
           </div>
           <div className="space-y-3">
-            <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+            <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3 overflow-hidden">
               <div
                 className="bg-emerald-500 h-full rounded-full transition-all duration-500"
                 style={{ width: `${pctReserva}%` }}
               />
             </div>
-            <div className="flex justify-between text-xs font-semibold text-slate-500">
+            <div className="flex justify-between text-xs font-semibold text-muted-foreground">
               <span>{pctReserva}% Concluído</span>
               <span>Resta {formatCurrency(Math.max(metaReserva - totalReserva, 0))}</span>
             </div>
@@ -975,23 +1330,23 @@ function Index() {
         </Card>
 
         {/* Plano Quitação de Dívidas */}
-        <Card className="border border-border/80 p-6 bg-white rounded-2xl shadow-sm flex flex-col justify-between">
+        <Card className="border border-border/80 p-6 bg-white dark:bg-card rounded-2xl shadow-sm flex flex-col justify-between">
           <div>
             <div className="flex justify-between items-start mb-4">
               <div className="space-y-1">
-                <h3 className="font-bold text-lg text-[#0B1120] flex items-center gap-3">
-                  <div className="p-2.5 bg-rose-50 rounded-xl text-rose-600">
+                <h3 className="font-bold text-lg text-foreground flex items-center gap-3">
+                  <div className="p-2.5 bg-rose-50 dark:bg-rose-950/20 rounded-xl text-rose-600">
                     <HandCoins className="w-5 h-5" />
                   </div>
                   Plano Quitação de Dívidas
                 </h3>
-                <p className="text-xs text-slate-500">Organização e quitação de dívidas</p>
+                <p className="text-xs text-muted-foreground">Organização e quitação de dívidas</p>
               </div>
               <div className="text-right">
-                <span className="font-extrabold text-lg text-[#0B1120]">
+                <span className="font-extrabold text-lg text-foreground">
                   {formatCurrency(totalDividaRestante)}
                 </span>
-                <span className="text-xs text-slate-500 block">
+                <span className="text-xs text-muted-foreground block mt-0.5">
                   Dívida Inicial: {formatCurrency(totalDividaOriginal)}
                 </span>
               </div>
@@ -999,20 +1354,20 @@ function Index() {
 
             {/* Progresso de Quitação Geral */}
             <div className="space-y-2 mb-6">
-              <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+              <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
                 <div
                   className="bg-rose-500 h-full rounded-full transition-all duration-500"
                   style={{ width: `${pctQuitado}%` }}
                 />
               </div>
-              <div className="flex justify-between text-xs font-semibold text-slate-500">
+              <div className="flex justify-between text-xs font-semibold text-muted-foreground">
                 <span>{pctQuitado}% Quitado</span>
                 <span>Economizou/Amortizou: {formatCurrency(totalDividaOriginal - totalDividaRestante)}</span>
               </div>
             </div>
 
             {/* Lista Interativa de Dívidas */}
-            <div className="space-y-3 max-h-[220px] overflow-y-auto pr-1 border-t border-slate-100 pt-3">
+            <div className="space-y-3 max-h-[220px] overflow-y-auto pr-1 border-t border-border pt-3">
               {debtsList.map((debt) => {
                 const isPaid = debt.status === "paid" || debt.status === "Pago";
                 const isRenegotiated = debt.paymentType === "Parcelado";
@@ -1024,11 +1379,11 @@ function Index() {
                     );
 
                 return (
-                  <div key={debt.id} className="p-3 border border-slate-100 rounded-xl bg-slate-50/50 hover:bg-slate-50 transition-colors flex flex-col gap-2">
+                  <div key={debt.id} className="p-3 border border-border rounded-xl bg-slate-50/50 dark:bg-slate-800/20 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors flex flex-col gap-2">
                     <div className="flex justify-between items-center">
                       <div>
-                        <span className="font-bold text-sm text-slate-800 block">{debt.name}</span>
-                        <span className="text-xs text-slate-500">
+                        <span className="font-bold text-sm text-foreground block">{debt.name}</span>
+                        <span className="text-xs text-muted-foreground">
                           {isRenegotiated 
                             ? `Acordo: ${debt.installmentsCount}x de ${formatCurrency(debt.installmentAmount)}` 
                             : "À vista"
@@ -1036,17 +1391,17 @@ function Index() {
                         </span>
                       </div>
                       <div className="text-right">
-                        <span className={`text-sm font-extrabold block ${isPaid ? "text-emerald-600 line-through" : "text-rose-600"}`}>
+                        <span className={`text-sm font-extrabold block ${isPaid ? "text-emerald-600 line-through" : "text-rose-600 dark:text-rose-450"}`}>
                           {isPaid ? "Quitada" : formatCurrency(debt.paymentType === "Parcelado" ? (debt.installmentsCount - debt.paidInstallments) * debt.installmentAmount : debt.amount)}
                         </span>
-                        <span className="text-[10px] text-slate-400">
+                        <span className="text-[10px] text-muted-foreground">
                           {isRenegotiated ? `${debt.paidInstallments}/${debt.installmentsCount} pagas` : "Saldo pendente"}
                         </span>
                       </div>
                     </div>
 
                     {/* Progress indicator per debt */}
-                    <div className="w-full bg-slate-200/70 h-1.5 rounded-full overflow-hidden">
+                    <div className="w-full bg-slate-200/70 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
                       <div
                         className={`h-full rounded-full transition-all duration-300 ${isPaid ? "bg-emerald-500" : "bg-rose-400"}`}
                         style={{ width: `${progressPct}%` }}
@@ -1054,18 +1409,18 @@ function Index() {
                     </div>
 
                     {/* Action buttons */}
-                    <div className="flex justify-between items-center pt-1 mt-1 border-t border-slate-200/40">
+                    <div className="flex justify-between items-center pt-1 mt-1 border-t border-border/50">
                       <div>
                         {isPaid ? (
-                          <Badge className="bg-emerald-100 text-emerald-700 text-[10px] font-bold border-none">
+                          <Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold border-none">
                             Pago
                           </Badge>
                         ) : isRenegotiated ? (
-                          <Badge className="bg-blue-50 text-[#1576D0] text-[10px] font-bold border-none">
+                          <Badge className="bg-blue-50 dark:bg-blue-900/30 text-[#1576D0] dark:text-blue-400 text-[10px] font-bold border-none">
                             Acordo Ativo
                           </Badge>
                         ) : (
-                          <Badge className="bg-amber-50 text-amber-700 text-[10px] font-bold border-none">
+                          <Badge className="bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-[10px] font-bold border-none">
                             Sem Acordo
                           </Badge>
                         )}
@@ -1078,7 +1433,7 @@ function Index() {
                               setPayAmountInput(debt.installmentAmount.toString());
                             }}
                             title="Lançar Pagamento"
-                            className="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 transition-colors"
+                            className="p-1.5 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 rounded-lg hover:bg-emerald-100 transition-colors"
                           >
                             <DollarSign className="w-3.5 h-3.5" />
                           </button>
@@ -1086,14 +1441,14 @@ function Index() {
                         <button
                           onClick={() => handleOpenEditDebt(debt)}
                           title="Renegociar / Editar"
-                          className="p-1.5 bg-blue-50 text-[#1576D0] rounded-lg hover:bg-blue-100 transition-colors"
+                          className="p-1.5 bg-blue-50 dark:bg-blue-950/20 text-[#1576D0] rounded-lg hover:bg-blue-100 transition-colors"
                         >
                           <Pencil className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => handleDeleteDebt(debt.id)}
                           title="Excluir"
-                          className="p-1.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 transition-colors"
+                          className="p-1.5 bg-rose-50 dark:bg-rose-950/20 text-rose-600 rounded-lg hover:bg-rose-100 transition-colors"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -1103,7 +1458,7 @@ function Index() {
                 );
               })}
               {debtsList.length === 0 && (
-                <div className="text-center text-slate-400 text-xs py-6">
+                <div className="text-center text-muted-foreground text-xs py-6">
                   Nenhuma dívida registrada no plano de quitação.
                 </div>
               )}
@@ -1113,7 +1468,7 @@ function Index() {
           <Button 
             onClick={handleOpenAddDebt} 
             variant="outline" 
-            className="w-full mt-4 border-[#1576D0] text-[#1576D0] hover:bg-blue-50 h-10 font-bold rounded-xl"
+            className="w-full mt-4 border-[#1576D0] text-[#1576D0] hover:bg-blue-50 dark:hover:bg-blue-950/20 h-10 font-bold rounded-xl"
           >
             <Plus className="w-4 h-4 mr-2" /> Adicionar Nova Dívida
           </Button>
@@ -1123,24 +1478,24 @@ function Index() {
       {/* Gestão de Cartões de Crédito e Contas em Aberto */}
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
         {/* Cartões de Crédito */}
-        <Card className="border border-border/80 p-6 bg-white rounded-2xl shadow-sm flex flex-col justify-between">
+        <Card className="border border-border/80 p-6 bg-white dark:bg-card rounded-2xl shadow-sm flex flex-col justify-between">
           <div>
             <div className="flex justify-between items-start mb-4">
               <div className="space-y-1">
-                <h3 className="font-bold text-lg text-[#0B1120] flex items-center gap-3">
-                  <div className="p-2.5 bg-blue-50 rounded-xl text-[#1576D0]">
+                <h3 className="font-bold text-lg text-foreground flex items-center gap-3">
+                  <div className="p-2.5 bg-blue-50 dark:bg-blue-950/20 rounded-xl text-[#1576D0]">
                     <CreditCard className="w-5 h-5" />
                   </div>
                   <span>Cartões de Crédito</span>
                   <button
                     onClick={handleOpenEditCards}
-                    className="p-1 text-slate-400 hover:text-[#1576D0] hover:bg-slate-100 rounded transition-colors"
+                    className="p-1 text-slate-400 hover:text-[#1576D0] hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"
                     title="Configurar Limites e Vencimentos"
                   >
                     <Pencil className="w-3.5 h-3.5" />
                   </button>
                 </h3>
-                <p className="text-xs text-slate-500">Acompanhe faturas, limites e vencimentos</p>
+                <p className="text-xs text-muted-foreground">Acompanhe faturas, limites e vencimentos</p>
               </div>
             </div>
 
@@ -1157,25 +1512,25 @@ function Index() {
                 }
 
                 return (
-                  <div key={card.name} className="p-3.5 border border-slate-100 rounded-xl bg-slate-50/50 hover:bg-slate-50 transition-colors flex flex-col gap-2">
+                  <div key={card.name} className="p-3.5 border border-border rounded-xl bg-slate-50/50 dark:bg-slate-800/10 hover:bg-slate-50 dark:hover:bg-slate-800/20 transition-colors flex flex-col gap-2">
                     <div className="flex justify-between items-center">
                       <div>
-                        <span className="font-bold text-sm text-slate-800 block">{card.name}</span>
-                        <span className="text-xs text-slate-500 font-medium">
+                        <span className="font-bold text-sm text-foreground block">{card.name}</span>
+                        <span className="text-xs text-muted-foreground font-medium">
                           Vence dia {card.dueDate}
                         </span>
                       </div>
                       <div className="text-right">
-                        <span className="text-sm font-extrabold text-slate-800 block">
+                        <span className="text-sm font-extrabold text-foreground block">
                           {formatCurrency(totalSpent)}
                         </span>
-                        <span className="text-[10px] text-slate-400">
+                        <span className="text-[10px] text-muted-foreground">
                           Limite: {formatCurrency(card.limit)}
                         </span>
                       </div>
                     </div>
 
-                    <div className="w-full bg-slate-200/70 h-1.5 rounded-full overflow-hidden">
+                    <div className="w-full bg-slate-200/70 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
                       <div
                         className={`h-full rounded-full transition-all duration-300 ${progressBarColor}`}
                         style={{ width: `${pctLimit}%` }}
@@ -1183,7 +1538,7 @@ function Index() {
                     </div>
 
                     <div className="flex justify-between items-center pt-1">
-                      <span className="text-[10px] text-slate-400 font-medium">
+                      <span className="text-[10px] text-muted-foreground font-medium">
                         {pctLimit}% do limite usado
                       </span>
                       <Button
@@ -1203,17 +1558,17 @@ function Index() {
         </Card>
 
         {/* Contas em Aberto */}
-        <Card className="border border-border/80 p-6 bg-white rounded-2xl shadow-sm flex flex-col justify-between">
+        <Card className="border border-border/80 p-6 bg-white dark:bg-card rounded-2xl shadow-sm flex flex-col justify-between">
           <div>
             <div className="flex justify-between items-start mb-4">
               <div className="space-y-1">
-                <h3 className="font-bold text-lg text-[#0B1120] flex items-center gap-3">
-                  <div className="p-2.5 bg-amber-50 rounded-xl text-amber-600">
+                <h3 className="font-bold text-lg text-foreground flex items-center gap-3">
+                  <div className="p-2.5 bg-amber-50 dark:bg-amber-950/20 rounded-xl text-amber-600">
                     <AlertCircle className="w-5 h-5" />
                   </div>
                   <span>Contas em Aberto</span>
                 </h3>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-muted-foreground">
                   Lançamentos pendentes ou atrasados para {formatMonthName(selectedMonth)}
                 </p>
               </div>
@@ -1229,12 +1584,12 @@ function Index() {
                 const overdue = dueDate < today;
 
                 return (
-                  <div key={t.id} className="p-3 border border-slate-100 rounded-xl bg-slate-50/50 hover:bg-slate-50 transition-colors flex items-center justify-between gap-3">
+                  <div key={t.id} className="p-3 border border-border rounded-xl bg-slate-50/50 dark:bg-slate-800/10 hover:bg-slate-50 dark:hover:bg-slate-800/20 transition-colors flex items-center justify-between gap-3">
                     <div className="min-w-0 flex-1">
-                      <span className="font-bold text-sm text-slate-800 block truncate">
+                      <span className="font-bold text-sm text-foreground block truncate">
                         {t.cleanDesc}
                       </span>
-                      <div className="flex gap-2 items-center text-xs text-slate-500 mt-1 flex-wrap">
+                      <div className="flex gap-2 items-center text-xs text-muted-foreground mt-1 flex-wrap">
                         <span>{t.category}</span>
                         <span>•</span>
                         <span className={`font-semibold ${overdue ? "text-rose-600" : ""}`}>
@@ -1244,7 +1599,7 @@ function Index() {
                       </div>
                     </div>
                     <div className="flex items-center gap-3 shrink-0">
-                      <span className="font-extrabold text-sm text-slate-700">
+                      <span className="font-extrabold text-sm text-foreground">
                         {formatCurrency(t.amount)}
                       </span>
                       <div className="flex items-center gap-1">
@@ -1262,7 +1617,7 @@ function Index() {
                           size="icon"
                           variant="ghost"
                           onClick={() => handleDeleteTransaction(t.id)}
-                          className="text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg w-8 h-8"
+                          className="text-slate-400 hover:text-red-650 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg w-8 h-8"
                           title="Excluir Lançamento"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -1273,7 +1628,7 @@ function Index() {
                 );
               })}
               {contasEmAberto.length === 0 && (
-                <div className="text-center text-slate-400 text-xs py-12">
+                <div className="text-center text-muted-foreground text-xs py-12">
                   Nenhuma conta em aberto para este mês. Tudo em dia!
                 </div>
               )}
@@ -1283,29 +1638,29 @@ function Index() {
       </div>
 
       {/* Orçamento e Teto de Gastos */}
-      <Card className="border border-border/80 p-6 bg-white rounded-2xl shadow-sm">
-        <div className="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-100 pb-4">
+      <Card className="border border-border/80 p-6 bg-white dark:bg-card rounded-2xl shadow-sm">
+        <div className="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-border pb-4">
           <div>
-            <h3 className="font-bold text-lg text-[#0B1120] flex items-center gap-3">
-              <div className="p-2.5 bg-amber-50 rounded-xl text-amber-600">
+            <h3 className="font-bold text-lg text-foreground flex items-center gap-3">
+              <div className="p-2.5 bg-amber-50 dark:bg-amber-950/20 rounded-xl text-amber-600">
                 <Scale className="w-5 h-5" />
               </div>
               Teto de Gastos (Orçamento do Casal)
             </h3>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-muted-foreground">
               Monitore o limite de gastos mensais por categoria para economizar em {formatMonthName(selectedMonth)}.
             </p>
           </div>
           {/* Fixo vs Variável Summary */}
-          <div className="flex gap-4 items-center bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs shadow-sm">
+          <div className="flex gap-4 items-center bg-slate-50 dark:bg-slate-800/40 p-3 rounded-xl border border-border text-xs shadow-sm">
             <div>
-              <span className="text-slate-400 font-semibold block">CUSTOS FIXOS</span>
-              <span className="font-extrabold text-[#0B1120] text-sm">{formatCurrency(fixedExpenses)}</span>
+              <span className="text-muted-foreground font-semibold block">CUSTOS FIXOS</span>
+              <span className="font-extrabold text-foreground text-sm">{formatCurrency(fixedExpenses)}</span>
             </div>
-            <div className="h-8 w-px bg-slate-200" />
+            <div className="h-8 w-px bg-border" />
             <div>
-              <span className="text-slate-400 font-semibold block">CUSTOS VARIÁVEIS</span>
-              <span className="font-extrabold text-[#0B1120] text-sm">{formatCurrency(variableExpenses)}</span>
+              <span className="text-muted-foreground font-semibold block">CUSTOS VARIÁVEIS</span>
+              <span className="font-extrabold text-foreground text-sm">{formatCurrency(variableExpenses)}</span>
             </div>
           </div>
         </div>
@@ -1326,21 +1681,21 @@ function Index() {
             return (
               <div key={category} className="space-y-2 border-b border-border/30 pb-3">
                 <div className="flex justify-between text-sm font-semibold">
-                  <span className="text-slate-800">{category}</span>
-                  <span className="text-slate-500">
-                    <strong className={spent > limit ? "text-rose-600" : "text-[#0B1120]"}>
+                  <span className="text-foreground">{category}</span>
+                  <span className="text-muted-foreground">
+                    <strong className={spent > limit ? "text-rose-600" : "text-foreground"}>
                       {formatCurrency(spent)}
                     </strong>{" "}
                     / {formatCurrency(limit)}
                   </span>
                 </div>
-                <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
                   <div
                     className={`${barColor} h-full rounded-full transition-all duration-300`}
                     style={{ width: `${pct}%` }}
                   />
                 </div>
-                <div className="flex justify-between text-[11px] text-slate-500 font-medium">
+                <div className="flex justify-between text-[11px] text-muted-foreground font-medium">
                   <span>{pct}% do orçamento utilizado</span>
                   <span>
                     {spent > limit
@@ -1354,29 +1709,60 @@ function Index() {
         </div>
       </Card>
 
-      {/* Gráfico e Últimos Lançamentos */}
+      {/* Lista de Contas e Últimos Lançamentos (Footer Table) */}
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-7">
-        <Card className="lg:col-span-4 p-6 border border-border/80 shadow-sm bg-white rounded-2xl w-full min-w-0 overflow-hidden">
-          <h2 className="text-lg font-bold mb-6 text-[#0B1120]">Balanço - {formatMonthName(selectedMonth)}</h2>
-          <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} />
-                <YAxis axisLine={false} tickLine={false} />
-                <Tooltip cursor={{ fill: "#f8f8f8" }} />
-                <Bar dataKey="value" radius={[8, 8, 0, 0]} barSize={55}>
-                  {chartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={index === 0 ? "#10b981" : "#f43f5e"} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+        {/* Lista de Contas */}
+        <Card className="lg:col-span-3 p-6 border border-border/80 shadow-sm bg-white dark:bg-card rounded-2xl w-full overflow-hidden">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-lg font-bold text-foreground">Minhas Contas</h2>
+            <Link to="/contas">
+              <Button variant="ghost" size="sm" className="text-xs text-[#1576D0] hover:text-blue-700 font-bold">
+                Ver todas
+              </Button>
+            </Link>
+          </div>
+          <div className="overflow-x-auto w-full">
+            <Table>
+              <TableBody>
+                {accounts.map((acc) => {
+                  const calculated = getAccountCalculatedBalance(acc);
+                  const colorsMap: { [key: string]: string } = {
+                    blue: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+                    emerald: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+                    purple: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
+                    amber: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+                    rose: "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400",
+                  };
+                  const colorClass = colorsMap[acc.color] || colorsMap.blue;
+
+                  return (
+                    <TableRow
+                      key={acc.id}
+                      className="hover:bg-slate-50 dark:hover:bg-slate-800/50 border-none transition-colors cursor-pointer"
+                      onClick={() => {
+                        window.location.href = `/contas?id=${acc.id}`;
+                      }}
+                    >
+                      <TableCell className="pl-0 py-3">
+                        <div className="font-semibold text-sm text-foreground">{acc.name}</div>
+                        <div className="text-xs text-muted-foreground mt-0.5">{acc.type}</div>
+                      </TableCell>
+                      <TableCell className="text-right py-3 pr-0">
+                        <Badge className={`${colorClass} font-bold border-none`}>
+                          {formatCurrency(calculated)}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
           </div>
         </Card>
 
-        <Card className="lg:col-span-3 p-6 border border-border/80 shadow-sm bg-white rounded-2xl w-full overflow-hidden">
-          <h2 className="text-lg font-bold mb-6 text-[#0B1120]">Últimos Lançamentos</h2>
+        {/* Últimos Lançamentos */}
+        <Card className="lg:col-span-4 p-6 border border-border/80 shadow-sm bg-white dark:bg-card rounded-2xl w-full overflow-hidden">
+          <h2 className="text-lg font-bold mb-6 text-foreground">Últimos Lançamentos</h2>
           <div className="overflow-x-auto w-full">
             <Table>
               <TableBody>
@@ -1385,11 +1771,11 @@ function Index() {
                   return (
                     <TableRow
                       key={t.id}
-                      className="hover:bg-slate-50 border-none transition-colors"
+                      className="hover:bg-slate-50 dark:hover:bg-slate-800/50 border-none transition-colors"
                     >
                       <TableCell className="pl-0 py-3">
-                        <div className="font-semibold text-sm text-slate-800">{cleanDesc}</div>
-                        <div className="text-xs text-slate-500 mt-0.5 flex flex-wrap gap-2 items-center">
+                        <div className="font-semibold text-sm text-foreground">{cleanDesc}</div>
+                        <div className="text-xs text-muted-foreground mt-0.5 flex flex-wrap gap-2 items-center">
                           <span>{t.category}</span>
                           <span>•</span>
                           <span>{new Date(t.date).toLocaleDateString("pt-BR")}</span>
@@ -1397,10 +1783,10 @@ function Index() {
                             <span
                               className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${
                                 respName === "Jack"
-                                  ? "bg-violet-100 text-violet-700"
+                                  ? "bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400"
                                   : respName === "Rangel"
-                                    ? "bg-blue-100 text-blue-700"
-                                    : "bg-amber-100 text-amber-700"
+                                    ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                                    : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
                               }`}
                             >
                               {respName}
@@ -1409,7 +1795,7 @@ function Index() {
                         </div>
                       </TableCell>
                       <TableCell
-                        className={`text-right font-extrabold py-3 text-sm ${t.type === "income" ? "text-emerald-600" : "text-rose-600"}`}
+                        className={`text-right font-extrabold py-3 text-sm ${t.type === "income" ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}
                       >
                         {t.type === "income" ? "+" : "-"} {formatCurrency(t.amount)}
                       </TableCell>
@@ -1418,7 +1804,7 @@ function Index() {
                           size="icon"
                           variant="ghost"
                           onClick={() => handleDeleteTransaction(t.id)}
-                          className="text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg w-8 h-8"
+                          className="text-slate-400 hover:text-red-650 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg w-8 h-8"
                           title="Excluir Lançamento"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -1429,7 +1815,7 @@ function Index() {
                 })}
                 {filteredTransactions.length === 0 && !loading && (
                   <TableRow>
-                    <TableCell colSpan={3} className="text-center text-slate-500 py-8">
+                    <TableCell colSpan={3} className="text-center text-muted-foreground py-8">
                       Nenhuma transação cadastrada para este mês.
                     </TableCell>
                   </TableRow>
@@ -1845,59 +2231,81 @@ function Index() {
         </DialogContent>
       </Dialog>
 
-      {/* DIALOG: Detalhes do Card do Resumo (Saldo, Receitas, Despesas, Cartão) */}
+      {/* DIALOG: Detalhamento do Card do Resumo (Saldo, Receitas, Despesas, Cartão) */}
       <Dialog 
         open={cardDetailModal !== null && cardDetailModal.isOpen} 
         onOpenChange={(open) => !open && setCardDetailModal(null)}
       >
-        <DialogContent className="sm:max-w-[550px] max-h-[85vh] flex flex-col p-6">
+        <DialogContent className="sm:max-w-[550px] max-h-[85vh] flex flex-col p-6 bg-card text-card-foreground border border-border">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-[#0B1120]">{cardDetailModal?.title}</DialogTitle>
+            <DialogTitle className="text-xl font-bold text-foreground">{cardDetailModal?.title}</DialogTitle>
           </DialogHeader>
           <div className="pt-4 flex-1 overflow-y-auto space-y-4 pr-1">
-            <div className="border border-slate-100 rounded-xl overflow-hidden">
+            <div className="border border-border rounded-xl overflow-hidden">
               <Table>
                 <TableBody>
-                  {cardDetailModal?.transactions && cardDetailModal.transactions.map((item) => {
-                    const isIncome = item.type === "income";
-                    return (
-                      <TableRow key={item.id} className="hover:bg-slate-50">
-                        <TableCell className="py-3 font-medium text-xs text-slate-500">
-                          {new Date(item.date).toLocaleDateString("pt-BR")}
-                        </TableCell>
-                        <TableCell className="py-3 text-sm font-semibold text-slate-800">
-                          <span className="block">{item.cleanDesc}</span>
-                          <span className="text-[10px] text-slate-400 block">{item.category}</span>
-                        </TableCell>
-                        <TableCell className="py-3 text-right">
-                          <div className="flex flex-col items-end gap-1">
-                            <span className={`font-extrabold text-sm ${
-                              cardDetailModal.isBalance 
-                                ? (isIncome ? "text-emerald-600" : "text-rose-600")
-                                : (isIncome ? "text-emerald-600" : "text-slate-800")
-                            }`}>
-                              {cardDetailModal.isBalance && !isIncome ? "- " : ""}
-                              {formatCurrency(item.amount)}
+                  {cardDetailModal?.isAccounts ? (
+                    accounts.map((acc) => {
+                      const calculated = getAccountCalculatedBalance(acc);
+                      return (
+                        <TableRow key={acc.id} className="hover:bg-slate-50 dark:hover:bg-slate-850/50">
+                          <TableCell className="py-3 font-semibold text-xs text-muted-foreground">
+                            {acc.type}
+                          </TableCell>
+                          <TableCell className="py-3 text-sm font-bold text-foreground">
+                            {acc.name}
+                          </TableCell>
+                          <TableCell className="py-3 text-right">
+                            <span className={`font-extrabold text-sm ${calculated >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
+                              {formatCurrency(calculated)}
                             </span>
-                            <div className="flex gap-1.5 items-center justify-end">
-                              {item.cardId && (
-                                <span className="px-1 py-0.2 bg-amber-50 text-amber-700 border border-amber-200 rounded text-[9px] font-bold">
-                                  {item.cardId}
-                                </span>
-                              )}
-                              <span className="px-1.5 py-0.2 bg-slate-100 text-slate-600 rounded text-[9px] font-bold">
-                                {item.responsible}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  ) : (
+                    cardDetailModal?.transactions && cardDetailModal.transactions.map((item) => {
+                      const isIncome = item.type === "income";
+                      return (
+                        <TableRow key={item.id} className="hover:bg-slate-50 dark:hover:bg-slate-850/50">
+                          <TableCell className="py-3 font-medium text-xs text-muted-foreground">
+                            {new Date(item.date).toLocaleDateString("pt-BR")}
+                          </TableCell>
+                          <TableCell className="py-3 text-sm font-semibold text-foreground">
+                            <span className="block">{item.cleanDesc}</span>
+                            <span className="text-[10px] text-muted-foreground block">{item.category}</span>
+                          </TableCell>
+                          <TableCell className="py-3 text-right">
+                            <div className="flex flex-col items-end gap-1">
+                              <span className={`font-extrabold text-sm ${
+                                cardDetailModal.isBalance 
+                                  ? (isIncome ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400")
+                                  : (isIncome ? "text-emerald-600 dark:text-emerald-400" : "text-foreground")
+                              }`}>
+                                {cardDetailModal.isBalance && !isIncome ? "- " : ""}
+                                {formatCurrency(item.amount)}
                               </span>
+                              <div className="flex gap-1.5 items-center justify-end">
+                                {item.cardId && (
+                                  <span className="px-1 py-0.2 bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border border-amber-250/20 rounded text-[9px] font-bold">
+                                    {item.cardId}
+                                  </span>
+                                )}
+                                <span className="px-1.5 py-0.2 bg-slate-100 dark:bg-slate-850 text-slate-600 dark:text-slate-400 rounded text-[9px] font-bold">
+                                  {item.responsible}
+                                </span>
+                              </div>
                             </div>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                  {cardDetailModal?.transactions && cardDetailModal.transactions.length === 0 && (
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  )}
+                  {((!cardDetailModal?.isAccounts && cardDetailModal?.transactions && cardDetailModal.transactions.length === 0) || 
+                    (cardDetailModal?.isAccounts && accounts.length === 0)) && (
                     <TableRow>
-                      <TableCell className="text-center py-10 text-sm text-slate-500">
-                        Nenhum lançamento encontrado neste grupo para o mês selecionado.
+                      <TableCell className="text-center py-10 text-sm text-muted-foreground">
+                        Nenhum registro encontrado.
                       </TableCell>
                     </TableRow>
                   )}
@@ -1905,9 +2313,43 @@ function Index() {
               </Table>
             </div>
           </div>
-          <DialogFooter className="mt-4 pt-4 border-t border-slate-100">
-            <Button onClick={() => setCardDetailModal(null)} className="w-full bg-[#0b1120] hover:bg-slate-800 text-white font-bold h-11 rounded-xl">
+          <DialogFooter className="mt-4 pt-4 border-t border-border">
+            <Button onClick={() => setCardDetailModal(null)} className="w-full bg-primary hover:bg-primary/95 text-white font-bold h-11 rounded-xl">
               Fechar Detalhes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* DIALOG: Detalhamento do Saldo */}
+      <Dialog open={isSaldoModalOpen} onOpenChange={setIsSaldoModalOpen}>
+        <DialogContent className="sm:max-w-[400px] bg-card text-card-foreground border border-border rounded-2xl shadow-xl">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold text-foreground">Detalhamento do saldo</DialogTitle>
+          </DialogHeader>
+          <div className="pt-4 space-y-4 text-sm">
+            <div className="flex justify-between items-center pb-2 border-b border-border/50">
+              <span className="text-muted-foreground font-semibold">Saldo efetivado:</span>
+              <span className="font-extrabold text-emerald-600 dark:text-emerald-400">
+                {formatCurrency(totalEfetivado)}
+              </span>
+            </div>
+            <div className="flex justify-between items-center pb-2 border-b border-border/50">
+              <span className="text-muted-foreground font-semibold">Saldo previsto:</span>
+              <span className={`font-extrabold ${totalPrevisto >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
+                {formatCurrency(totalPrevisto)}
+              </span>
+            </div>
+            <div className="flex justify-between items-center pt-2">
+              <span className="text-foreground font-bold">Saldo total:</span>
+              <span className={`font-extrabold text-lg ${totalSaldoGeral >= 0 ? "text-primary dark:text-blue-400" : "text-rose-600 dark:text-rose-400"}`}>
+                {formatCurrency(totalSaldoGeral)}
+              </span>
+            </div>
+          </div>
+          <DialogFooter className="pt-4">
+            <Button onClick={() => setIsSaldoModalOpen(false)} className="w-full bg-primary hover:bg-primary/95 text-white font-bold h-10 rounded-xl">
+              Fechar
             </Button>
           </DialogFooter>
         </DialogContent>

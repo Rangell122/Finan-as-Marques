@@ -411,7 +411,7 @@ function Relatorios() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background text-white">
+      <div className="flex min-h-screen items-center justify-center bg-background text-foreground">
         Carregando Relatórios...
       </div>
     );
@@ -426,7 +426,7 @@ function Relatorios() {
   return (
     <>
       {/* Target for printing a single card */}
-      <div id="print-target" className="hidden print:block bg-white text-[#0B1120] p-8 rounded-3xl" />
+      <div id="print-target" className="hidden print:block bg-white dark:bg-card text-foreground p-8 rounded-3xl" />
 
       {/* Main layout container (hidden when printing single card) */}
       <motion.div
@@ -437,11 +437,11 @@ function Relatorios() {
         {/* Header Title with contrast fixed */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="flex flex-col gap-1">
-            <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-2">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
               <LucideLineChart className="w-8 h-8 text-[#1576D0]" />
               Relatórios Financeiros
             </h1>
-            <p className="text-slate-400 text-sm">
+            <p className="text-muted-foreground text-sm">
               Análise e evolução do patrimônio, entradas, saídas e compromissos.
             </p>
           </div>
@@ -450,18 +450,18 @@ function Relatorios() {
           <div className="flex items-center gap-2">
             <Calendar className="w-5 h-5 text-[#1576D0]" />
             <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-              <SelectTrigger className="w-[180px] bg-white border border-border text-slate-800 font-semibold rounded-xl shadow-sm h-11">
+              <SelectTrigger className="w-[180px] bg-white dark:bg-card border border-border text-foreground font-semibold rounded-xl shadow-sm h-11">
                 <SelectValue placeholder="Selecione o mês" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-card border border-border text-foreground">
                 {months.length > 0 ? (
                   months.map((m) => (
-                    <SelectItem key={m} value={m} className="font-medium text-slate-700">
+                    <SelectItem key={m} value={m} className="font-medium">
                       {formatMonthName(m)}
                     </SelectItem>
                   ))
                 ) : (
-                  <SelectItem value="2026-05" className="font-medium text-slate-700">
+                  <SelectItem value="2026-05" className="font-medium">
                     Maio 2026
                   </SelectItem>
                 )}
@@ -471,19 +471,19 @@ function Relatorios() {
         </div>
 
         {/* 1. Evolução Histórica (Area Chart) - Full Width */}
-        <Card id="card-evolucao" className="border border-border/80 shadow-md bg-white rounded-2xl overflow-hidden relative">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b border-slate-100">
+        <Card id="card-evolucao" className="border border-border/80 shadow-md bg-white dark:bg-card rounded-2xl overflow-hidden relative">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b border-border">
             <div>
-              <CardTitle className="text-lg font-bold text-slate-800 flex items-center gap-2">
+              <CardTitle className="text-lg font-bold text-foreground flex items-center gap-2">
                 <Activity className="w-5 h-5 text-primary" />
                 Histórico de Evolução Mensal
               </CardTitle>
-              <p className="text-xs text-slate-400 mt-1">Histórico acumulado de Receitas, Despesas e Saldo Líquido</p>
+              <p className="text-xs text-muted-foreground mt-1">Histórico acumulado de Receitas, Despesas e Saldo Líquido</p>
             </div>
             <Button
               variant="outline"
               size="icon"
-              className="print-card-btn rounded-xl border-slate-200 text-slate-500 hover:text-primary hover:bg-slate-50"
+              className="print-card-btn rounded-xl border-border text-muted-foreground hover:text-primary hover:bg-slate-50 dark:hover:bg-slate-800"
               onClick={() => handlePrintCard("card-evolucao")}
               title="Exportar Gráfico em PDF"
             >
@@ -509,12 +509,12 @@ function Relatorios() {
                         <stop offset="95%" stopColor="#1576D0" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" dark:stroke="#1e293b" />
                     <XAxis dataKey="monthName" stroke="#94a3b8" fontSize={11} tickLine={false} />
                     <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} />
                     <Tooltip 
                       formatter={(value: any) => [formatCurrency(Number(value)), ""]}
-                      contentStyle={{ backgroundColor: "#ffffff", borderRadius: "12px", border: "1px solid #e2e8f0" }}
+                      contentStyle={{ backgroundColor: "var(--card)", color: "var(--foreground)", borderRadius: "12px", border: "1px solid var(--border)" }}
                     />
                     <Legend iconType="circle" wrapperStyle={{ fontSize: 12, paddingTop: 10 }} />
                     <Area type="monotone" dataKey="Receitas" stroke="#22c55e" strokeWidth={2.5} fillOpacity={1} fill="url(#colorReceitas)" />
@@ -524,7 +524,7 @@ function Relatorios() {
                 </ResponsiveContainer>
               </div>
             ) : (
-              <div className="h-[250px] flex items-center justify-center text-slate-400 text-sm">
+              <div className="h-[250px] flex items-center justify-center text-muted-foreground text-sm">
                 Nenhum histórico disponível ainda.
               </div>
             )}
@@ -535,19 +535,19 @@ function Relatorios() {
         <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
           
           {/* 2. Despesas por Categoria (Donut / Pie Chart) */}
-          <Card id="card-categoria" className="border border-border/80 shadow-md bg-white rounded-2xl relative">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b border-slate-100">
+          <Card id="card-categoria" className="border border-border/80 shadow-md bg-white dark:bg-card rounded-2xl relative">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b border-border">
               <div>
-                <CardTitle className="text-base font-bold text-slate-800 flex items-center gap-2">
+                <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
                   <TrendingDown className="w-5 h-5 text-rose-500" />
                   Distribuição por Categoria
                 </CardTitle>
-                <p className="text-xs text-slate-400 mt-1">Gastos reais por categorias no mês selecionado</p>
+                <p className="text-xs text-muted-foreground mt-1">Gastos reais por categorias no mês selecionado</p>
               </div>
               <Button
                 variant="outline"
                 size="icon"
-                className="print-card-btn rounded-xl border-slate-200 text-slate-500 hover:text-primary hover:bg-slate-50"
+                className="print-card-btn rounded-xl border-border text-muted-foreground hover:text-primary hover:bg-slate-50 dark:hover:bg-slate-800"
                 onClick={() => handlePrintCard("card-categoria")}
                 title="Exportar Gráfico em PDF"
               >
@@ -577,27 +577,27 @@ function Relatorios() {
                       </PieChart>
                     </ResponsiveContainer>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Total</span>
-                      <span className="text-base font-extrabold text-slate-800">{formatCurrency(despesas)}</span>
+                      <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Total</span>
+                      <span className="text-base font-extrabold text-foreground">{formatCurrency(despesas)}</span>
                     </div>
                   </div>
                   <div className="flex-1 space-y-2.5 max-h-[220px] overflow-y-auto w-full pr-1">
                     {categoryData.map((item, index) => (
-                      <div key={item.name} className="flex items-center justify-between text-xs border-b border-slate-50 pb-1.5">
+                      <div key={item.name} className="flex items-center justify-between text-xs border-b border-border pb-1.5">
                         <div className="flex items-center gap-2 min-w-0">
                           <span 
                             className="w-2.5 h-2.5 rounded-full flex-shrink-0" 
                             style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }} 
                           />
-                          <span className="font-semibold text-slate-700 truncate">{item.name}</span>
+                          <span className="font-semibold text-foreground truncate">{item.name}</span>
                         </div>
-                        <span className="font-extrabold text-slate-900 ml-2">{formatCurrency(item.value)}</span>
+                        <span className="font-extrabold text-foreground ml-2">{formatCurrency(item.value)}</span>
                       </div>
                     ))}
                   </div>
                 </div>
               ) : (
-                <div className="h-[220px] flex items-center justify-center text-slate-400 text-sm">
+                <div className="h-[220px] flex items-center justify-center text-muted-foreground text-sm">
                   Nenhuma despesa para exibir no mês de {formatMonthName(selectedMonth)}.
                 </div>
               )}
@@ -605,19 +605,19 @@ function Relatorios() {
           </Card>
 
           {/* 3. Responsabilidade de Gasto (Pie Chart) */}
-          <Card id="card-responsabilidade" className="border border-border/80 shadow-md bg-white rounded-2xl relative">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b border-slate-100">
+          <Card id="card-responsabilidade" className="border border-border/80 shadow-md bg-white dark:bg-card rounded-2xl relative">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b border-border">
               <div>
-                <CardTitle className="text-base font-bold text-slate-800 flex items-center gap-2">
+                <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
                   <User className="w-5 h-5 text-primary" />
                   Divisão de Responsabilidade
                 </CardTitle>
-                <p className="text-xs text-slate-400 mt-1">Quem gastou os recursos no mês selecionado</p>
+                <p className="text-xs text-muted-foreground mt-1">Quem gastou os recursos no mês selecionado</p>
               </div>
               <Button
                 variant="outline"
                 size="icon"
-                className="print-card-btn rounded-xl border-slate-200 text-slate-500 hover:text-primary hover:bg-slate-50"
+                className="print-card-btn rounded-xl border-border text-muted-foreground hover:text-primary hover:bg-slate-50 dark:hover:bg-slate-800"
                 onClick={() => handlePrintCard("card-responsabilidade")}
                 title="Exportar Gráfico em PDF"
               >
@@ -658,11 +658,11 @@ function Relatorios() {
                                 className="w-2.5 h-2.5 rounded-full" 
                                 style={{ backgroundColor: CHART_COLORS[(index + 4) % CHART_COLORS.length] }} 
                               />
-                              <span className="font-bold text-slate-700">{item.name}</span>
+                              <span className="font-bold text-foreground">{item.name}</span>
                             </div>
-                            <span className="font-extrabold text-slate-900">{formatCurrency(item.value)} ({pct}%)</span>
+                            <span className="font-extrabold text-foreground">{formatCurrency(item.value)} ({pct}%)</span>
                           </div>
-                          <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                          <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
                             <div 
                               className="h-full rounded-full" 
                               style={{ 
@@ -677,7 +677,7 @@ function Relatorios() {
                   </div>
                 </div>
               ) : (
-                <div className="h-[220px] flex items-center justify-center text-slate-400 text-sm">
+                <div className="h-[220px] flex items-center justify-center text-muted-foreground text-sm">
                   Nenhum registro de consumo no mês selecionado.
                 </div>
               )}
@@ -685,19 +685,19 @@ function Relatorios() {
           </Card>
 
           {/* 4. Uso de Cartões de Crédito (Bar Chart) */}
-          <Card id="card-cartoes" className="border border-border/80 shadow-md bg-white rounded-2xl relative">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b border-slate-100">
+          <Card id="card-cartoes" className="border border-border/80 shadow-md bg-white dark:bg-card rounded-2xl relative">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b border-border">
               <div>
-                <CardTitle className="text-base font-bold text-slate-800 flex items-center gap-2">
+                <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
                   <CreditCard className="w-5 h-5 text-amber-500" />
                   Gasto por Cartão de Crédito
                 </CardTitle>
-                <p className="text-xs text-slate-400 mt-1">Comparação de compras realizadas no mês por bandeira</p>
+                <p className="text-xs text-muted-foreground mt-1">Comparação de compras realizadas no mês por bandeira</p>
               </div>
               <Button
                 variant="outline"
                 size="icon"
-                className="print-card-btn rounded-xl border-slate-200 text-slate-500 hover:text-primary hover:bg-slate-50"
+                className="print-card-btn rounded-xl border-border text-muted-foreground hover:text-primary hover:bg-slate-50 dark:hover:bg-slate-800"
                 onClick={() => handlePrintCard("card-cartoes")}
                 title="Exportar Gráfico em PDF"
               >
@@ -710,12 +710,12 @@ function Relatorios() {
                   <div className="h-[180px] w-full">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={creditCardData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" dark:stroke="#1e293b" />
                         <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} tickLine={false} />
                         <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} />
                         <Tooltip 
                           formatter={(value: any) => formatCurrency(Number(value))}
-                          contentStyle={{ backgroundColor: "#ffffff", borderRadius: "12px", border: "1px solid #e2e8f0" }}
+                          contentStyle={{ backgroundColor: "var(--card)", color: "var(--foreground)", borderRadius: "12px", border: "1px solid var(--border)" }}
                         />
                         <Bar dataKey="Fatura" radius={[8, 8, 0, 0]}>
                           {creditCardData.map((entry, index) => (
@@ -725,13 +725,13 @@ function Relatorios() {
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
-                  <div className="flex justify-between items-center bg-slate-50 p-4 rounded-xl border border-slate-100">
-                    <span className="font-bold text-slate-700 text-xs uppercase tracking-wider">Gasto Total no Cartão</span>
-                    <span className="font-extrabold text-base text-amber-600">{formatCurrency(totalCartao)}</span>
+                  <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-800/40 p-4 rounded-xl border border-border">
+                    <span className="font-bold text-foreground text-xs uppercase tracking-wider">Gasto Total no Cartão</span>
+                    <span className="font-extrabold text-base text-amber-600 dark:text-amber-450">{formatCurrency(totalCartao)}</span>
                   </div>
                 </div>
               ) : (
-                <div className="h-[220px] flex items-center justify-center text-slate-400 text-sm">
+                <div className="h-[220px] flex items-center justify-center text-muted-foreground text-sm">
                   Nenhuma compra registrada nos cartões no mês selecionado.
                 </div>
               )}
@@ -739,19 +739,19 @@ function Relatorios() {
           </Card>
 
           {/* 5. Custo Fixo vs Variável (Bar Chart) */}
-          <Card id="card-custos" className="border border-border/80 shadow-md bg-white rounded-2xl relative">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b border-slate-100">
+          <Card id="card-custos" className="border border-border/80 shadow-md bg-white dark:bg-card rounded-2xl relative">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b border-border">
               <div>
-                <CardTitle className="text-base font-bold text-slate-800 flex items-center gap-2">
+                <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
                   <Coins className="w-5 h-5 text-emerald-500" />
                   Perfil de Custos (Fixo vs Variável)
                 </CardTitle>
-                <p className="text-xs text-slate-400 mt-1">Comparativo de despesas necessárias vs supérfluas</p>
+                <p className="text-xs text-muted-foreground mt-1">Comparativo de despesas necessárias vs supérfluas</p>
               </div>
               <Button
                 variant="outline"
                 size="icon"
-                className="print-card-btn rounded-xl border-slate-200 text-slate-500 hover:text-primary hover:bg-slate-50"
+                className="print-card-btn rounded-xl border-border text-muted-foreground hover:text-primary hover:bg-slate-50 dark:hover:bg-slate-800"
                 onClick={() => handlePrintCard("card-custos")}
                 title="Exportar Gráfico em PDF"
               >
@@ -764,12 +764,12 @@ function Relatorios() {
                   <div className="h-[180px] w-full">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={fixedVariableData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" dark:stroke="#1e293b" />
                         <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} tickLine={false} />
                         <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} />
                         <Tooltip 
                           formatter={(value: any) => formatCurrency(Number(value))}
-                          contentStyle={{ backgroundColor: "#ffffff", borderRadius: "12px", border: "1px solid #e2e8f0" }}
+                          contentStyle={{ backgroundColor: "var(--card)", color: "var(--foreground)", borderRadius: "12px", border: "1px solid var(--border)" }}
                         />
                         <Bar dataKey="Valor" radius={[8, 8, 0, 0]}>
                           <Cell fill="#0E2C63" />
@@ -780,15 +780,15 @@ function Relatorios() {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     {fixedVariableData.map((item, idx) => (
-                      <div key={item.name} className="p-3 bg-slate-50 rounded-xl border border-slate-100 text-center">
-                        <span className="text-[10px] text-slate-400 font-bold block uppercase">{item.name}</span>
-                        <span className="font-extrabold text-sm text-slate-800 mt-1 block">{formatCurrency(item.Valor)}</span>
+                      <div key={item.name} className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-border text-center">
+                        <span className="text-[10px] text-muted-foreground font-bold block uppercase">{item.name}</span>
+                        <span className="font-extrabold text-sm text-foreground mt-1 block">{formatCurrency(item.Valor)}</span>
                       </div>
                     ))}
                   </div>
                 </div>
               ) : (
-                <div className="h-[220px] flex items-center justify-center text-slate-400 text-sm">
+                <div className="h-[220px] flex items-center justify-center text-muted-foreground text-sm">
                   Sem registros de custos no mês selecionado.
                 </div>
               )}

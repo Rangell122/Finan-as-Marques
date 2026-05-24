@@ -153,23 +153,23 @@ function Calculadoras() {
       className="p-4 md:p-8 space-y-6 bg-background min-h-screen pb-24"
     >
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-2">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
           <Calculator className="w-8 h-8 text-[#1576D0]" />
           Calculadoras Financeiras
         </h1>
-        <p className="text-slate-500 text-sm">
+        <p className="text-muted-foreground text-sm">
           Simule seus investimentos, renda passiva e planeje sua reserva.
         </p>
       </div>
 
       {/* Tabs */}
-      <div className="flex flex-wrap gap-2 border-b border-slate-200 pb-2">
+      <div className="flex flex-wrap gap-2 border-b border-border pb-2">
         <button
           onClick={() => setActiveTab("juros")}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm transition-colors ${
             activeTab === "juros"
               ? "bg-[#1576D0] text-white shadow-sm"
-              : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
+              : "bg-white dark:bg-card border border-border text-slate-655 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
           }`}
         >
           <TrendingUp className="w-4 h-4" />
@@ -180,7 +180,7 @@ function Calculadoras() {
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm transition-colors ${
             activeTab === "reserva"
               ? "bg-[#1576D0] text-white shadow-sm"
-              : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
+              : "bg-white dark:bg-card border border-border text-slate-655 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
           }`}
         >
           <ShieldCheck className="w-4 h-4" />
@@ -191,7 +191,7 @@ function Calculadoras() {
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm transition-colors ${
             activeTab === "passiva"
               ? "bg-[#1576D0] text-white shadow-sm"
-              : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
+              : "bg-white dark:bg-card border border-border text-slate-655 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
           }`}
         >
           <Coins className="w-4 h-4" />
@@ -202,7 +202,7 @@ function Calculadoras() {
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm transition-colors ${
             activeTab === "cdi"
               ? "bg-[#1576D0] text-white shadow-sm"
-              : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
+              : "bg-white dark:bg-card border border-border text-slate-655 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
           }`}
         >
           <BarChart3 className="w-4 h-4" />
@@ -212,48 +212,52 @@ function Calculadoras() {
 
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
         {/* Input Form Column */}
-        <Card className="lg:col-span-1 p-6 bg-white border border-border/80 shadow-sm rounded-2xl">
+        <Card className="lg:col-span-1 p-6 bg-white dark:bg-card border border-border shadow-sm rounded-2xl">
           {activeTab === "juros" && (
             <form onSubmit={calcularJuros} className="space-y-4">
-              <h3 className="font-bold text-lg text-[#0B1120] mb-4">Simulação de Crescimento</h3>
+              <h3 className="font-bold text-lg text-foreground mb-4">Simulação de Crescimento</h3>
               <div className="space-y-2">
-                <Label>Valor Inicial (R$)</Label>
+                <Label className="text-slate-700 dark:text-slate-300">Valor Inicial (R$)</Label>
                 <Input
                   type="number"
                   required
                   value={jurosValInicial}
                   onChange={(e) => setJurosValInicial(e.target.value)}
+                  className="bg-background border-border text-foreground rounded-xl"
                 />
               </div>
               <div className="space-y-2">
-                <Label>Aporte Mensal (R$)</Label>
+                <Label className="text-slate-700 dark:text-slate-300">Aporte Mensal (R$)</Label>
                 <Input
                   type="number"
                   required
                   value={jurosAporte}
                   onChange={(e) => setJurosAporte(e.target.value)}
+                  className="bg-background border-border text-foreground rounded-xl"
                 />
               </div>
               <div className="space-y-2">
-                <Label>Taxa de Juros (% ao ano)</Label>
+                <Label className="text-slate-700 dark:text-slate-300">Taxa de Juros (% ao ano)</Label>
                 <Input
                   type="number"
                   step="0.1"
                   required
                   value={jurosTaxa}
                   onChange={(e) => setJurosTaxa(e.target.value)}
+                  className="bg-background border-border text-foreground rounded-xl"
                 />
               </div>
               <div className="space-y-2">
-                <Label>Prazo / Duração (Anos)</Label>
+                <Label className="text-slate-700 dark:text-slate-300">Prazo / Duração (Anos)</Label>
                 <Input
                   type="number"
                   required
                   value={jurosPrazo}
                   onChange={(e) => setJurosPrazo(e.target.value)}
+                  className="bg-background border-border text-foreground rounded-xl"
                 />
               </div>
-              <Button type="submit" className="w-full bg-[#1576D0] hover:bg-[#0d5ca5] text-white rounded-xl h-11 font-bold">
+              <Button type="submit" className="w-full bg-[#1576D0] hover:bg-[#0d5ca5] text-white rounded-xl h-11 font-bold select-none shadow">
                 Calcular
               </Button>
             </form>
@@ -261,27 +265,29 @@ function Calculadoras() {
 
           {activeTab === "reserva" && (
             <form onSubmit={calcularReserva} className="space-y-4">
-              <h3 className="font-bold text-lg text-[#0B1120] mb-4">Meta de Proteção</h3>
+              <h3 className="font-bold text-lg text-foreground mb-4">Meta de Proteção</h3>
               <div className="space-y-2">
-                <Label>Custo de Vida Mensal (R$)</Label>
+                <Label className="text-slate-700 dark:text-slate-300">Custo de Vida Mensal (R$)</Label>
                 <Input
                   type="number"
                   required
                   value={reservaCusto}
                   onChange={(e) => setReservaCusto(e.target.value)}
+                  className="bg-background border-border text-foreground rounded-xl"
                 />
               </div>
               <div className="space-y-2">
-                <Label>Quantidade de Meses de Cobertura</Label>
+                <Label className="text-slate-700 dark:text-slate-300">Quantidade de Meses de Cobertura</Label>
                 <Input
                   type="number"
                   required
                   value={reservaMeses}
                   onChange={(e) => setReservaMeses(e.target.value)}
                   placeholder="Recomendado: 6 meses"
+                  className="bg-background border-border text-foreground rounded-xl"
                 />
               </div>
-              <Button type="submit" className="w-full bg-[#1576D0] hover:bg-[#0d5ca5] text-white rounded-xl h-11 font-bold">
+              <Button type="submit" className="w-full bg-[#1576D0] hover:bg-[#0d5ca5] text-white rounded-xl h-11 font-bold select-none shadow">
                 Calcular Reserva Ideal
               </Button>
             </form>
@@ -289,27 +295,29 @@ function Calculadoras() {
 
           {activeTab === "passiva" && (
             <form onSubmit={calcularRendaPassiva} className="space-y-4">
-              <h3 className="font-bold text-lg text-[#0B1120] mb-4">Meta de Renda Passiva</h3>
+              <h3 className="font-bold text-lg text-foreground mb-4">Meta de Renda Passiva</h3>
               <div className="space-y-2">
-                <Label>Renda Mensal Desejada (R$)</Label>
+                <Label className="text-slate-700 dark:text-slate-300">Renda Mensal Desejada (R$)</Label>
                 <Input
                   type="number"
                   required
                   value={passivaDesejada}
                   onChange={(e) => setPassivaDesejada(e.target.value)}
+                  className="bg-background border-border text-foreground rounded-xl"
                 />
               </div>
               <div className="space-y-2">
-                <Label>Taxa Real da Carteira (% ao ano)</Label>
+                <Label className="text-slate-700 dark:text-slate-300">Taxa Real da Carteira (% ao ano)</Label>
                 <Input
                   type="number"
                   step="0.1"
                   required
                   value={passivaTaxa}
                   onChange={(e) => setPassivaTaxa(e.target.value)}
+                  className="bg-background border-border text-foreground rounded-xl"
                 />
               </div>
-              <Button type="submit" className="w-full bg-[#1576D0] hover:bg-[#0d5ca5] text-white rounded-xl h-11 font-bold">
+              <Button type="submit" className="w-full bg-[#1576D0] hover:bg-[#0d5ca5] text-white rounded-xl h-11 font-bold select-none shadow">
                 Calcular Patrimônio Necessário
               </Button>
             </form>
@@ -317,36 +325,39 @@ function Calculadoras() {
 
           {activeTab === "cdi" && (
             <form onSubmit={calcularCDI} className="space-y-4">
-              <h3 className="font-bold text-lg text-[#0B1120] mb-4">CDI vs Caderneta</h3>
+              <h3 className="font-bold text-lg text-foreground mb-4">CDI vs Caderneta</h3>
               <div className="space-y-2">
-                <Label>Valor a Investir (R$)</Label>
+                <Label className="text-slate-700 dark:text-slate-300">Valor a Investir (R$)</Label>
                 <Input
                   type="number"
                   required
                   value={cdiValor}
                   onChange={(e) => setCdiValor(e.target.value)}
+                  className="bg-background border-border text-foreground rounded-xl"
                 />
               </div>
               <div className="space-y-2">
-                <Label>Taxa CDI / Selic (% ao ano)</Label>
+                <Label className="text-slate-700 dark:text-slate-300">Taxa CDI / Selic (% ao ano)</Label>
                 <Input
                   type="number"
                   step="0.01"
                   required
                   value={cdiTaxa}
                   onChange={(e) => setCdiTaxa(e.target.value)}
+                  className="bg-background border-border text-foreground rounded-xl"
                 />
               </div>
               <div className="space-y-2">
-                <Label>Prazo (Meses)</Label>
+                <Label className="text-slate-700 dark:text-slate-300">Prazo (Meses)</Label>
                 <Input
                   type="number"
                   required
                   value={cdiPrazo}
                   onChange={(e) => setCdiPrazo(e.target.value)}
+                  className="bg-background border-border text-foreground rounded-xl"
                 />
               </div>
-              <Button type="submit" className="w-full bg-[#1576D0] hover:bg-[#0d5ca5] text-white rounded-xl h-11 font-bold">
+              <Button type="submit" className="w-full bg-[#1576D0] hover:bg-[#0d5ca5] text-white rounded-xl h-11 font-bold select-none shadow">
                 Comparar Rentabilidade
               </Button>
             </form>
@@ -354,33 +365,33 @@ function Calculadoras() {
         </Card>
 
         {/* Results Column */}
-        <Card className="lg:col-span-2 p-6 bg-white border border-border/80 shadow-sm rounded-2xl flex flex-col justify-center">
+        <Card className="lg:col-span-2 p-6 bg-white dark:bg-card border border-border shadow-sm rounded-2xl flex flex-col justify-center">
           {activeTab === "juros" && (
             <div className="space-y-6">
-              <h3 className="font-bold text-lg text-[#0B1120]">Resultado da Simulação</h3>
+              <h3 className="font-bold text-lg text-foreground">Resultado da Simulação</h3>
               {jurosResult ? (
                 <div className="grid gap-4 md:grid-cols-2">
-                  <div className="p-4 bg-slate-50 rounded-xl space-y-1">
-                    <span className="text-xs text-slate-500 block">Total Investido</span>
-                    <strong className="text-lg text-slate-800 font-extrabold">
+                  <div className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-border/50 space-y-1">
+                    <span className="text-xs text-muted-foreground block">Total Investido</span>
+                    <strong className="text-lg text-foreground font-extrabold">
                       {formatCurrency(jurosResult.totalInvestido)}
                     </strong>
                   </div>
-                  <div className="p-4 bg-emerald-50 rounded-xl space-y-1">
-                    <span className="text-xs text-emerald-700 block">Total ganho em Juros</span>
-                    <strong className="text-lg text-emerald-600 font-extrabold">
+                  <div className="p-4 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100/10 rounded-xl space-y-1">
+                    <span className="text-xs text-emerald-700 dark:text-emerald-450 block">Total ganho em Juros</span>
+                    <strong className="text-lg text-emerald-600 dark:text-emerald-400 font-extrabold">
                       {formatCurrency(jurosResult.rendimentoJuros)}
                     </strong>
                   </div>
-                  <div className="p-5 bg-blue-50 border border-blue-100 rounded-2xl col-span-2 space-y-1 text-center">
-                    <span className="text-sm text-blue-700 block">Patrimônio Acumulado Final</span>
-                    <strong className="text-3xl text-[#1576D0] font-black">
+                  <div className="p-5 bg-blue-50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 rounded-2xl col-span-2 space-y-1 text-center">
+                    <span className="text-sm text-blue-700 dark:text-blue-400 block">Patrimônio Acumulado Final</span>
+                    <strong className="text-3xl text-primary dark:text-blue-400 font-black">
                       {formatCurrency(jurosResult.totalFinal)}
                     </strong>
                   </div>
                 </div>
               ) : (
-                <div className="text-center text-slate-400 py-10 flex flex-col items-center gap-2">
+                <div className="text-center text-muted-foreground py-10 flex flex-col items-center gap-2">
                   <TrendingUp className="w-8 h-8 opacity-40 text-[#1576D0]" />
                   <span>Insira os valores na calculadora e clique em Calcular.</span>
                 </div>
@@ -390,37 +401,37 @@ function Calculadoras() {
 
           {activeTab === "reserva" && (
             <div className="space-y-6">
-              <h3 className="font-bold text-lg text-[#0B1120]">Resultado da Reserva</h3>
+              <h3 className="font-bold text-lg text-foreground">Resultado da Reserva</h3>
               {reservaResult ? (
                 <div className="space-y-6">
-                  <div className="p-5 bg-emerald-50 border border-emerald-100 rounded-2xl text-center space-y-1">
-                    <span className="text-sm text-emerald-700 block">Meta da Reserva de Emergência</span>
-                    <strong className="text-3xl text-emerald-600 font-black">
+                  <div className="p-5 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 rounded-2xl text-center space-y-1">
+                    <span className="text-sm text-emerald-700 dark:text-emerald-450 block">Meta da Reserva de Emergência</span>
+                    <strong className="text-3xl text-emerald-600 dark:text-emerald-400 font-black">
                       {formatCurrency(reservaResult.meta)}
                     </strong>
-                    <span className="text-xs text-slate-500 block mt-1">
+                    <span className="text-xs text-muted-foreground block mt-1">
                       (Equivalente a {reservaMeses} meses de custo de vida básico de {formatCurrency(parseFloat(reservaCusto))})
                     </span>
                   </div>
 
                   <div className="space-y-3">
-                    <h4 className="font-bold text-sm text-slate-700">Tempo estimado para formar a reserva:</h4>
+                    <h4 className="font-bold text-sm text-slate-700 dark:text-slate-300">Tempo estimado para formar a reserva:</h4>
                     <div className="grid gap-3 sm:grid-cols-3">
-                      <div className="p-3 bg-slate-50 rounded-xl text-center">
-                        <span className="text-[10px] text-slate-500 block">Poupando 10%/mês</span>
-                        <strong className="text-sm text-slate-800 font-extrabold">
+                      <div className="p-3 bg-slate-50 dark:bg-slate-800/40 border border-border/50 rounded-xl text-center">
+                        <span className="text-[10px] text-muted-foreground block">Poupando 10%/mês</span>
+                        <strong className="text-sm text-foreground font-extrabold">
                           {Math.ceil(reservaResult.guardando10)} meses
                         </strong>
                       </div>
-                      <div className="p-3 bg-slate-50 rounded-xl text-center">
-                        <span className="text-[10px] text-slate-500 block">Poupando 20%/mês</span>
-                        <strong className="text-sm text-slate-800 font-extrabold">
+                      <div className="p-3 bg-slate-50 dark:bg-slate-800/40 border border-border/50 rounded-xl text-center">
+                        <span className="text-[10px] text-muted-foreground block">Poupando 20%/mês</span>
+                        <strong className="text-sm text-foreground font-extrabold">
                           {Math.ceil(reservaResult.guardando20)} meses
                         </strong>
                       </div>
-                      <div className="p-3 bg-slate-50 rounded-xl text-center">
-                        <span className="text-[10px] text-slate-500 block">Poupando 30%/mês</span>
-                        <strong className="text-sm text-slate-800 font-extrabold">
+                      <div className="p-3 bg-slate-50 dark:bg-slate-800/40 border border-border/50 rounded-xl text-center">
+                        <span className="text-[10px] text-muted-foreground block">Poupando 30%/mês</span>
+                        <strong className="text-sm text-foreground font-extrabold">
                           {Math.ceil(reservaResult.guardando30)} meses
                         </strong>
                       </div>
@@ -428,7 +439,7 @@ function Calculadoras() {
                   </div>
                 </div>
               ) : (
-                <div className="text-center text-slate-400 py-10 flex flex-col items-center gap-2">
+                <div className="text-center text-muted-foreground py-10 flex flex-col items-center gap-2">
                   <ShieldCheck className="w-8 h-8 opacity-40 text-[#1576D0]" />
                   <span>Insira os valores na calculadora e clique em Calcular.</span>
                 </div>
@@ -438,19 +449,19 @@ function Calculadoras() {
 
           {activeTab === "passiva" && (
             <div className="space-y-6">
-              <h3 className="font-bold text-lg text-[#0B1120]">Resultado Renda Perpétua</h3>
+              <h3 className="font-bold text-lg text-foreground">Resultado Renda Perpétua</h3>
               {passivaResult ? (
                 <div className="space-y-6">
-                  <div className="p-6 bg-blue-50 border border-blue-100 rounded-2xl text-center space-y-1">
-                    <span className="text-sm text-blue-700 block">Patrimônio Ideal Necessário</span>
-                    <strong className="text-3xl text-[#1576D0] font-black">
+                  <div className="p-6 bg-blue-50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 rounded-2xl text-center space-y-1">
+                    <span className="text-sm text-blue-700 dark:text-blue-400 block">Patrimônio Ideal Necessário</span>
+                    <strong className="text-3xl text-primary dark:text-blue-400 font-black">
                       {formatCurrency(passivaResult.patrimonioNecessario)}
                     </strong>
-                    <span className="text-xs text-slate-500 block mt-2">
+                    <span className="text-xs text-muted-foreground block mt-2">
                       Aplicado a uma taxa líquida de {passivaTaxa}% ao ano para gerar {formatCurrency(passivaResult.rendaDesejada)} mensais para sempre, sem consumir o principal.
                     </span>
                   </div>
-                  <div className="p-4 bg-amber-50 text-amber-800 rounded-xl flex gap-3 text-xs leading-relaxed">
+                  <div className="p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200/10 text-amber-800 dark:text-amber-400 rounded-xl flex gap-3 text-xs leading-relaxed">
                     <Info className="w-5 h-5 flex-shrink-0" />
                     <div>
                       <strong>Nota de Planejamento:</strong> A taxa recomendada para simulação é de 4% a 6% líquido (acima da inflação) ao ano para manter seu poder de compra intacto no longo prazo.
@@ -458,7 +469,7 @@ function Calculadoras() {
                   </div>
                 </div>
               ) : (
-                <div className="text-center text-slate-400 py-10 flex flex-col items-center gap-2">
+                <div className="text-center text-muted-foreground py-10 flex flex-col items-center gap-2">
                   <Coins className="w-8 h-8 opacity-40 text-[#1576D0]" />
                   <span>Insira os valores na calculadora e clique em Calcular.</span>
                 </div>
@@ -468,46 +479,46 @@ function Calculadoras() {
 
           {activeTab === "cdi" && (
             <div className="space-y-6">
-              <h3 className="font-bold text-lg text-[#0B1120]">Resultado Comparativo</h3>
+              <h3 className="font-bold text-lg text-foreground">Resultado Comparativo</h3>
               {cdiResult ? (
                 <div className="space-y-4">
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl">
-                      <span className="text-xs text-blue-700 block">CDI Líquido (Com IR)</span>
-                      <strong className="text-base text-[#1576D0] font-extrabold block mt-1">
+                    <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 rounded-xl">
+                      <span className="text-xs text-blue-700 dark:text-blue-400 block">CDI Líquido (Com IR)</span>
+                      <strong className="text-base text-primary dark:text-blue-400 font-extrabold block mt-1">
                         {formatCurrency(cdiResult.liquidoCDI)}
                       </strong>
-                      <span className="text-[10px] text-slate-500">
+                      <span className="text-[10px] text-muted-foreground">
                         Rendimento: {formatCurrency(cdiResult.ganhoCDI)}
                       </span>
                     </div>
-                    <div className="p-4 bg-slate-50 rounded-xl">
-                      <span className="text-xs text-slate-500 block">Caderneta de Poupança</span>
-                      <strong className="text-base text-slate-800 font-extrabold block mt-1">
+                    <div className="p-4 bg-slate-50 dark:bg-slate-800/40 border border-border/50 rounded-xl">
+                      <span className="text-xs text-muted-foreground block">Caderneta de Poupança</span>
+                      <strong className="text-base text-foreground font-extrabold block mt-1">
                         {formatCurrency(cdiResult.poupanca)}
                       </strong>
-                      <span className="text-[10px] text-slate-500">
+                      <span className="text-[10px] text-muted-foreground">
                         Rendimento: {formatCurrency(cdiResult.ganhoPoupanca)}
                       </span>
                     </div>
                   </div>
 
-                  <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center justify-between">
+                  <div className="p-4 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 rounded-xl flex items-center justify-between">
                     <div>
-                      <span className="text-xs text-emerald-800 font-bold block">Vantagem do CDI Liquido</span>
-                      <p className="text-[11px] text-slate-500">Rendimento extra acima da poupança</p>
+                      <span className="text-xs text-emerald-800 dark:text-emerald-450 font-bold block">Vantagem do CDI Liquido</span>
+                      <p className="text-[11px] text-muted-foreground">Rendimento extra acima da poupança</p>
                     </div>
-                    <strong className="text-xl text-emerald-600 font-black">
+                    <strong className="text-xl text-emerald-600 dark:text-emerald-400 font-black">
                       + {formatCurrency(cdiResult.diferenca)}
                     </strong>
                   </div>
 
-                  <div className="text-center text-[10px] text-slate-400">
+                  <div className="text-center text-[10px] text-muted-foreground">
                     * Descontado imposto de renda retido na fonte de {formatCurrency(cdiResult.impostoIR)} sobre o rendimento bruto do CDI.
                   </div>
                 </div>
               ) : (
-                <div className="text-center text-slate-400 py-10 flex flex-col items-center gap-2">
+                <div className="text-center text-muted-foreground py-10 flex flex-col items-center gap-2">
                   <BarChart3 className="w-8 h-8 opacity-40 text-[#1576D0]" />
                   <span>Insira os valores na calculadora e clique em Calcular.</span>
                 </div>

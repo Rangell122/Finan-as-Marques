@@ -10,7 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TransacoesRouteImport } from './routes/transacoes'
+import { Route as TagsRouteImport } from './routes/tags'
+import { Route as SobreRouteImport } from './routes/sobre'
 import { Route as RelatoriosRouteImport } from './routes/relatorios'
+import { Route as PlanosRouteImport } from './routes/planos'
+import { Route as OrcamentosRouteImport } from './routes/orcamentos'
+import { Route as ObjetivosRouteImport } from './routes/objetivos'
+import { Route as GraficosRouteImport } from './routes/graficos'
+import { Route as FaqRouteImport } from './routes/faq'
+import { Route as ContasRouteImport } from './routes/contas'
+import { Route as CategoriasRouteImport } from './routes/categorias'
+import { Route as CartoesRouteImport } from './routes/cartoes'
+import { Route as CalendarioRouteImport } from './routes/calendario'
 import { Route as CalculadorasRouteImport } from './routes/calculadoras'
 import { Route as AjustesRouteImport } from './routes/ajustes'
 import { Route as AdicionarRouteImport } from './routes/adicionar'
@@ -21,9 +32,64 @@ const TransacoesRoute = TransacoesRouteImport.update({
   path: '/transacoes',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TagsRoute = TagsRouteImport.update({
+  id: '/tags',
+  path: '/tags',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SobreRoute = SobreRouteImport.update({
+  id: '/sobre',
+  path: '/sobre',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RelatoriosRoute = RelatoriosRouteImport.update({
   id: '/relatorios',
   path: '/relatorios',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlanosRoute = PlanosRouteImport.update({
+  id: '/planos',
+  path: '/planos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OrcamentosRoute = OrcamentosRouteImport.update({
+  id: '/orcamentos',
+  path: '/orcamentos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ObjetivosRoute = ObjetivosRouteImport.update({
+  id: '/objetivos',
+  path: '/objetivos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GraficosRoute = GraficosRouteImport.update({
+  id: '/graficos',
+  path: '/graficos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FaqRoute = FaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContasRoute = ContasRouteImport.update({
+  id: '/contas',
+  path: '/contas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CategoriasRoute = CategoriasRouteImport.update({
+  id: '/categorias',
+  path: '/categorias',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CartoesRoute = CartoesRouteImport.update({
+  id: '/cartoes',
+  path: '/cartoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CalendarioRoute = CalendarioRouteImport.update({
+  id: '/calendario',
+  path: '/calendario',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CalculadorasRoute = CalculadorasRouteImport.update({
@@ -52,7 +118,18 @@ export interface FileRoutesByFullPath {
   '/adicionar': typeof AdicionarRoute
   '/ajustes': typeof AjustesRoute
   '/calculadoras': typeof CalculadorasRoute
+  '/calendario': typeof CalendarioRoute
+  '/cartoes': typeof CartoesRoute
+  '/categorias': typeof CategoriasRoute
+  '/contas': typeof ContasRoute
+  '/faq': typeof FaqRoute
+  '/graficos': typeof GraficosRoute
+  '/objetivos': typeof ObjetivosRoute
+  '/orcamentos': typeof OrcamentosRoute
+  '/planos': typeof PlanosRoute
   '/relatorios': typeof RelatoriosRoute
+  '/sobre': typeof SobreRoute
+  '/tags': typeof TagsRoute
   '/transacoes': typeof TransacoesRoute
 }
 export interface FileRoutesByTo {
@@ -60,7 +137,18 @@ export interface FileRoutesByTo {
   '/adicionar': typeof AdicionarRoute
   '/ajustes': typeof AjustesRoute
   '/calculadoras': typeof CalculadorasRoute
+  '/calendario': typeof CalendarioRoute
+  '/cartoes': typeof CartoesRoute
+  '/categorias': typeof CategoriasRoute
+  '/contas': typeof ContasRoute
+  '/faq': typeof FaqRoute
+  '/graficos': typeof GraficosRoute
+  '/objetivos': typeof ObjetivosRoute
+  '/orcamentos': typeof OrcamentosRoute
+  '/planos': typeof PlanosRoute
   '/relatorios': typeof RelatoriosRoute
+  '/sobre': typeof SobreRoute
+  '/tags': typeof TagsRoute
   '/transacoes': typeof TransacoesRoute
 }
 export interface FileRoutesById {
@@ -69,7 +157,18 @@ export interface FileRoutesById {
   '/adicionar': typeof AdicionarRoute
   '/ajustes': typeof AjustesRoute
   '/calculadoras': typeof CalculadorasRoute
+  '/calendario': typeof CalendarioRoute
+  '/cartoes': typeof CartoesRoute
+  '/categorias': typeof CategoriasRoute
+  '/contas': typeof ContasRoute
+  '/faq': typeof FaqRoute
+  '/graficos': typeof GraficosRoute
+  '/objetivos': typeof ObjetivosRoute
+  '/orcamentos': typeof OrcamentosRoute
+  '/planos': typeof PlanosRoute
   '/relatorios': typeof RelatoriosRoute
+  '/sobre': typeof SobreRoute
+  '/tags': typeof TagsRoute
   '/transacoes': typeof TransacoesRoute
 }
 export interface FileRouteTypes {
@@ -79,7 +178,18 @@ export interface FileRouteTypes {
     | '/adicionar'
     | '/ajustes'
     | '/calculadoras'
+    | '/calendario'
+    | '/cartoes'
+    | '/categorias'
+    | '/contas'
+    | '/faq'
+    | '/graficos'
+    | '/objetivos'
+    | '/orcamentos'
+    | '/planos'
     | '/relatorios'
+    | '/sobre'
+    | '/tags'
     | '/transacoes'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -87,7 +197,18 @@ export interface FileRouteTypes {
     | '/adicionar'
     | '/ajustes'
     | '/calculadoras'
+    | '/calendario'
+    | '/cartoes'
+    | '/categorias'
+    | '/contas'
+    | '/faq'
+    | '/graficos'
+    | '/objetivos'
+    | '/orcamentos'
+    | '/planos'
     | '/relatorios'
+    | '/sobre'
+    | '/tags'
     | '/transacoes'
   id:
     | '__root__'
@@ -95,7 +216,18 @@ export interface FileRouteTypes {
     | '/adicionar'
     | '/ajustes'
     | '/calculadoras'
+    | '/calendario'
+    | '/cartoes'
+    | '/categorias'
+    | '/contas'
+    | '/faq'
+    | '/graficos'
+    | '/objetivos'
+    | '/orcamentos'
+    | '/planos'
     | '/relatorios'
+    | '/sobre'
+    | '/tags'
     | '/transacoes'
   fileRoutesById: FileRoutesById
 }
@@ -104,7 +236,18 @@ export interface RootRouteChildren {
   AdicionarRoute: typeof AdicionarRoute
   AjustesRoute: typeof AjustesRoute
   CalculadorasRoute: typeof CalculadorasRoute
+  CalendarioRoute: typeof CalendarioRoute
+  CartoesRoute: typeof CartoesRoute
+  CategoriasRoute: typeof CategoriasRoute
+  ContasRoute: typeof ContasRoute
+  FaqRoute: typeof FaqRoute
+  GraficosRoute: typeof GraficosRoute
+  ObjetivosRoute: typeof ObjetivosRoute
+  OrcamentosRoute: typeof OrcamentosRoute
+  PlanosRoute: typeof PlanosRoute
   RelatoriosRoute: typeof RelatoriosRoute
+  SobreRoute: typeof SobreRoute
+  TagsRoute: typeof TagsRoute
   TransacoesRoute: typeof TransacoesRoute
 }
 
@@ -117,11 +260,88 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TransacoesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/tags': {
+      id: '/tags'
+      path: '/tags'
+      fullPath: '/tags'
+      preLoaderRoute: typeof TagsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sobre': {
+      id: '/sobre'
+      path: '/sobre'
+      fullPath: '/sobre'
+      preLoaderRoute: typeof SobreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/relatorios': {
       id: '/relatorios'
       path: '/relatorios'
       fullPath: '/relatorios'
       preLoaderRoute: typeof RelatoriosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/planos': {
+      id: '/planos'
+      path: '/planos'
+      fullPath: '/planos'
+      preLoaderRoute: typeof PlanosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/orcamentos': {
+      id: '/orcamentos'
+      path: '/orcamentos'
+      fullPath: '/orcamentos'
+      preLoaderRoute: typeof OrcamentosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/objetivos': {
+      id: '/objetivos'
+      path: '/objetivos'
+      fullPath: '/objetivos'
+      preLoaderRoute: typeof ObjetivosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/graficos': {
+      id: '/graficos'
+      path: '/graficos'
+      fullPath: '/graficos'
+      preLoaderRoute: typeof GraficosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/faq': {
+      id: '/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof FaqRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contas': {
+      id: '/contas'
+      path: '/contas'
+      fullPath: '/contas'
+      preLoaderRoute: typeof ContasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/categorias': {
+      id: '/categorias'
+      path: '/categorias'
+      fullPath: '/categorias'
+      preLoaderRoute: typeof CategoriasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cartoes': {
+      id: '/cartoes'
+      path: '/cartoes'
+      fullPath: '/cartoes'
+      preLoaderRoute: typeof CartoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/calendario': {
+      id: '/calendario'
+      path: '/calendario'
+      fullPath: '/calendario'
+      preLoaderRoute: typeof CalendarioRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/calculadoras': {
@@ -160,7 +380,18 @@ const rootRouteChildren: RootRouteChildren = {
   AdicionarRoute: AdicionarRoute,
   AjustesRoute: AjustesRoute,
   CalculadorasRoute: CalculadorasRoute,
+  CalendarioRoute: CalendarioRoute,
+  CartoesRoute: CartoesRoute,
+  CategoriasRoute: CategoriasRoute,
+  ContasRoute: ContasRoute,
+  FaqRoute: FaqRoute,
+  GraficosRoute: GraficosRoute,
+  ObjetivosRoute: ObjetivosRoute,
+  OrcamentosRoute: OrcamentosRoute,
+  PlanosRoute: PlanosRoute,
   RelatoriosRoute: RelatoriosRoute,
+  SobreRoute: SobreRoute,
+  TagsRoute: TagsRoute,
   TransacoesRoute: TransacoesRoute,
 }
 export const routeTree = rootRouteImport

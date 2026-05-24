@@ -70,25 +70,25 @@ function Ajustes() {
       className="p-4 md:p-8 space-y-6 bg-background min-h-screen pb-24"
     >
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-2">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
           <SlidersHorizontal className="w-6 h-6 text-[#1576D0]" />
           Ajustes
         </h1>
-        <p className="text-slate-500 text-sm">Gerencie sua conta e sincronização.</p>
+        <p className="text-muted-foreground text-sm">Gerencie sua conta e sincronização.</p>
       </div>
 
-      <Card className="p-2 border border-border/80 shadow-sm bg-white rounded-2xl overflow-hidden divide-y divide-slate-100">
+      <Card className="p-2 border border-border/80 shadow-sm bg-white dark:bg-card rounded-2xl overflow-hidden divide-y divide-border">
         <button
           onClick={handleImport}
-          className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors text-left"
+          className="w-full flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors text-left"
         >
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+            <div className="p-2 bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 rounded-lg">
               <DownloadCloud className="w-5 h-5" />
             </div>
             <div>
-              <div className="font-bold text-slate-800">Forçar Importação Google Sheets</div>
-              <div className="text-xs text-slate-500">
+              <div className="font-bold text-foreground">Forçar Importação Google Sheets</div>
+              <div className="text-xs text-muted-foreground">
                 Puxa os dados manualmente se houver falha.
               </div>
             </div>
@@ -96,29 +96,29 @@ function Ajustes() {
         </button>
         <button
           onClick={handleWipe}
-          className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors text-left"
+          className="w-full flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors text-left"
         >
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-amber-50 text-amber-600 rounded-lg">
+            <div className="p-2 bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 rounded-lg">
               <Trash2 className="w-5 h-5" />
             </div>
             <div>
-              <div className="font-bold text-slate-800">Zerar Plataforma</div>
-              <div className="text-xs text-slate-500">Apaga todas as transações atuais.</div>
+              <div className="font-bold text-foreground">Zerar Plataforma</div>
+              <div className="text-xs text-muted-foreground">Apaga todas as transações atuais.</div>
             </div>
           </div>
         </button>
         <button
           onClick={handleLogout}
-          className="w-full flex items-center justify-between p-4 hover:bg-red-50 transition-colors text-left"
+          className="w-full flex items-center justify-between p-4 hover:bg-red-50 dark:hover:bg-red-950/15 transition-colors text-left"
         >
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-red-50 text-red-600 rounded-lg">
+            <div className="p-2 bg-red-50 dark:bg-red-950/20 text-red-650 dark:text-red-400 rounded-lg">
               <LogOut className="w-5 h-5" />
             </div>
             <div>
-              <div className="font-bold text-red-600">Sair da Conta</div>
-              <div className="text-xs text-red-400">Desconectar do aplicativo.</div>
+              <div className="font-bold text-red-600 dark:text-red-400">Sair da Conta</div>
+              <div className="text-xs text-red-400 dark:text-red-500">Desconectar do aplicativo.</div>
             </div>
           </div>
         </button>
