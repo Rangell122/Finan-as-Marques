@@ -600,17 +600,17 @@ function RootComponent() {
                 <Wallet className="w-5 h-5" />
                 <span className="text-[10px]">Transações</span>
               </Link>
-              <Link to="/transacoes" className="rounded-full w-12 h-12 -mt-6 shadow-lg bg-primary hover:bg-primary/95 flex items-center justify-center text-primary-foreground transition-all duration-200 border-4 border-background">
+              <Link to="/adicionar" className="rounded-full w-12 h-12 -mt-6 shadow-lg bg-primary hover:bg-primary/95 flex items-center justify-center text-primary-foreground transition-all duration-200 border-4 border-background">
                 <Plus className="w-6 h-6" />
               </Link>
-              <button onClick={() => { setMenuOpen(true); setReportsExpanded(true); }} className="flex flex-col items-center gap-1 text-slate-400 hover:text-primary">
+              <Link to="/relatorios" className="flex flex-col items-center gap-1 text-slate-400" activeProps={{ className: "text-primary" }}>
                 <LineChart className="w-5 h-5" />
                 <span className="text-[10px]">Relatórios</span>
-              </button>
-              <button onClick={() => { setMenuOpen(true); setSettingsExpanded(true); }} className="flex flex-col items-center gap-1 text-slate-400 hover:text-primary">
+              </Link>
+              <Link to="/ajustes" className="flex flex-col items-center gap-1 text-slate-400" activeProps={{ className: "text-primary" }}>
                 <SlidersHorizontal className="w-5 h-5" />
                 <span className="text-[10px]">Ajustes</span>
-              </button>
+              </Link>
             </nav>
           )}
 

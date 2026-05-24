@@ -10,11 +10,29 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TransacoesRouteImport } from './routes/transacoes'
+import { Route as RelatoriosRouteImport } from './routes/relatorios'
+import { Route as AjustesRouteImport } from './routes/ajustes'
+import { Route as AdicionarRouteImport } from './routes/adicionar'
 import { Route as IndexRouteImport } from './routes/index'
 
 const TransacoesRoute = TransacoesRouteImport.update({
   id: '/transacoes',
   path: '/transacoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RelatoriosRoute = RelatoriosRouteImport.update({
+  id: '/relatorios',
+  path: '/relatorios',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AjustesRoute = AjustesRouteImport.update({
+  id: '/ajustes',
+  path: '/ajustes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdicionarRoute = AdicionarRouteImport.update({
+  id: '/adicionar',
+  path: '/adicionar',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -25,27 +43,45 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/adicionar': typeof AdicionarRoute
+  '/ajustes': typeof AjustesRoute
+  '/relatorios': typeof RelatoriosRoute
   '/transacoes': typeof TransacoesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/adicionar': typeof AdicionarRoute
+  '/ajustes': typeof AjustesRoute
+  '/relatorios': typeof RelatoriosRoute
   '/transacoes': typeof TransacoesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/adicionar': typeof AdicionarRoute
+  '/ajustes': typeof AjustesRoute
+  '/relatorios': typeof RelatoriosRoute
   '/transacoes': typeof TransacoesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/transacoes'
+  fullPaths: '/' | '/adicionar' | '/ajustes' | '/relatorios' | '/transacoes'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/transacoes'
-  id: '__root__' | '/' | '/transacoes'
+  to: '/' | '/adicionar' | '/ajustes' | '/relatorios' | '/transacoes'
+  id:
+    | '__root__'
+    | '/'
+    | '/adicionar'
+    | '/ajustes'
+    | '/relatorios'
+    | '/transacoes'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdicionarRoute: typeof AdicionarRoute
+  AjustesRoute: typeof AjustesRoute
+  RelatoriosRoute: typeof RelatoriosRoute
   TransacoesRoute: typeof TransacoesRoute
 }
 
@@ -56,6 +92,27 @@ declare module '@tanstack/react-router' {
       path: '/transacoes'
       fullPath: '/transacoes'
       preLoaderRoute: typeof TransacoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/relatorios': {
+      id: '/relatorios'
+      path: '/relatorios'
+      fullPath: '/relatorios'
+      preLoaderRoute: typeof RelatoriosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ajustes': {
+      id: '/ajustes'
+      path: '/ajustes'
+      fullPath: '/ajustes'
+      preLoaderRoute: typeof AjustesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/adicionar': {
+      id: '/adicionar'
+      path: '/adicionar'
+      fullPath: '/adicionar'
+      preLoaderRoute: typeof AdicionarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -70,6 +127,9 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdicionarRoute: AdicionarRoute,
+  AjustesRoute: AjustesRoute,
+  RelatoriosRoute: RelatoriosRoute,
   TransacoesRoute: TransacoesRoute,
 }
 export const routeTree = rootRouteImport
