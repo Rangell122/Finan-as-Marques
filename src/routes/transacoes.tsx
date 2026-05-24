@@ -41,6 +41,58 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { supabase } from "@/lib/supabase";
 import { EditTransactionDialog } from "@/components/EditTransactionDialog";
 
+const parseMeta = (description: string) => {
+  const raw = String(description || "");
+  let responsible = "Os dois";
+  let cleanDesc = raw;
+  let costType = "variable";
+  let cardId = null;
+  let installment = null;
+
+  let remaining = raw;
+  if (remaining.startsWith("[Jack] ")) {
+    responsible = "Jack";
+    remaining = remaining.replace("[Jack] ", "");
+  } else if (remaining.startsWith("[Rangel] ")) {
+    responsible = "Rangel";
+    remaining = remaining.replace("[Rangel] ", "");
+  } else if (remaining.startsWith("[Os dois] ")) {
+    responsible = "Os dois";
+    remaining = remaining.replace("[Os dois] ", "");
+  }
+
+  if (remaining.startsWith("META_JSON:")) {
+    try {
+      const meta = JSON.parse(remaining.substring(10));
+      cleanDesc = meta.desc || "";
+      if (meta.costType) costType = meta.costType;
+      if (meta.cardId) cardId = meta.cardId;
+      if (meta.installment) installment = meta.installment;
+    } catch (e) {
+      console.error("Error parsing META_JSON:", e);
+      cleanDesc = remaining.substring(10);
+    }
+  } else if (remaining.startsWith("DEBT_JSON:")) {
+    try {
+      const meta = JSON.parse(remaining.substring(10));
+      cleanDesc = `Dívida: ${meta.name || ""}`;
+      costType = "fixed";
+    } catch (e) {
+      cleanDesc = "Dívida";
+    }
+  } else {
+    cleanDesc = remaining;
+  }
+
+  return {
+    cleanDesc,
+    responsible,
+    costType,
+    cardId,
+    installment
+  };
+};
+
 export const Route = createFileRoute("/transacoes")({
   component: TransactionsPage,
 });
@@ -56,6 +108,7 @@ function TransactionsPage() {
   const [incomeCategory, setIncomeCategory] = useState("Renda - Salário");
   const [incomeAmount, setIncomeAmount] = useState("");
   const [incomeDate, setIncomeDate] = useState(new Date().toISOString().split("T")[0]);
+  const [incomeStatus, setIncomeStatus] = useState("paid"); // "paid", "pending", "overdue"
 
   // Form states for inline adding (Despesas)
   const [expenseDesc, setExpenseDesc] = useState("");
@@ -63,13 +116,22 @@ function TransactionsPage() {
   const [expenseCategory, setExpenseCategory] = useState("Casa - Mercado / Compras");
   const [expenseAmount, setExpenseAmount] = useState("");
   const [expenseDate, setExpenseDate] = useState(new Date().toISOString().split("T")[0]);
-  const [expenseStatus, setExpenseStatus] = useState("Pago"); // "Pago" ou "Pendente"
+  const [expenseStatus, setExpenseStatus] = useState("paid"); // "paid", "pending", "overdue"
   const [expenseResponsible, setExpenseResponsible] = useState("Os dois");
+
+  // Novas configurações de cartão e tipo de custo para o form rápido
+  const [expenseCostType, setExpenseCostType] = useState("variable"); // "fixed" ou "variable"
+  const [expensePaymentMethod, setExpensePaymentMethod] = useState("cash"); // "cash" ou "card"
+  const [expenseCardId, setExpenseCardId] = useState("Nubank");
+  const [expenseIsInstallments, setExpenseIsInstallments] = useState(false);
+  const [expenseInstallmentsCount, setExpenseInstallmentsCount] = useState("3");
+  const [cards, setCards] = useState<string[]>(["Nubank", "Inter", "Sicredi"]);
 
   // States para dar baixa/pagar conta pendente
   const [payTransaction, setPayTransaction] = useState<any | null>(null);
   const [payAmount, setPayAmount] = useState("");
   const [payDate, setPayDate] = useState(new Date().toISOString().split("T")[0]);
+  const [openPay, setOpenPay] = useState(false);
 
   const [editTransaction, setEditTransaction] = useState<any>(null);
   const [actionLoading, setActionLoading] = useState(false);
@@ -99,6 +161,20 @@ function TransactionsPage() {
 
   useEffect(() => {
     fetchTransactions();
+    if (typeof window !== "undefined") {
+      try {
+        const storedCards = localStorage.getItem("cartoes_config");
+        if (storedCards) {
+          const parsed = JSON.parse(storedCards);
+          setCards(parsed.map((c: any) => c.name));
+          if (parsed.length > 0) {
+            setExpenseCardId(parsed[0].name);
+          }
+        }
+      } catch (e) {
+        console.error("Error reading cards config:", e);
+      }
+    }
   }, []);
 
   const handleAddIncome = async (e: React.FormEvent) => {
@@ -112,14 +188,22 @@ function TransactionsPage() {
       } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuário não autenticado");
 
+      const metaData = {
+        desc: incomeSource,
+        costType: "variable",
+        cardId: null
+      };
+
+      const finalDesc = `META_JSON:${JSON.stringify(metaData)}`;
+
       const { error } = await supabase.from("transactions").insert({
         user_id: user.id,
         type: "income",
-        description: incomeSource,
+        description: finalDesc,
         amount: parseFloat(incomeAmount),
         date: incomeDate,
         category: incomeCategory,
-        status: "paid", // database-compatible status value
+        status: incomeStatus === "paid" ? "paid" : "pending",
       });
 
       if (error) throw error;
@@ -127,6 +211,7 @@ function TransactionsPage() {
       setIncomeSource("");
       setIncomeAmount("");
       setIncomeDate(new Date().toISOString().split("T")[0]);
+      setIncomeStatus("paid");
 
       await fetchTransactions();
     } catch (err: any) {
@@ -148,26 +233,83 @@ function TransactionsPage() {
       if (!user) throw new Error("Usuário não autenticado");
 
       const rawDesc = expenseLocation ? `${expenseDesc} (${expenseLocation})` : expenseDesc;
+      const baseAmount = parseFloat(expenseAmount);
+      const isCard = expensePaymentMethod === "card";
 
-      const finalDesc = `[${expenseResponsible}] ${rawDesc}`;
+      // Lógica de parcelamento automático
+      if (isCard && expenseIsInstallments) {
+        const instCount = parseInt(expenseInstallmentsCount, 10) || 1;
+        const batch = [];
+        let remainingAmount = baseAmount;
 
-      const { error } = await supabase.from("transactions").insert({
-        user_id: user.id,
-        type: "expense",
-        description: finalDesc,
-        amount: parseFloat(expenseAmount),
-        date: expenseDate,
-        category: expenseCategory,
-        status: expenseStatus === "Pago" ? "paid" : "pending", // database-compatible status value
-      });
+        for (let i = 1; i <= instCount; i++) {
+          let currentAmt = parseFloat((baseAmount / instCount).toFixed(2));
+          if (i === instCount) {
+            currentAmt = parseFloat(remainingAmount.toFixed(2));
+          } else {
+            remainingAmount -= currentAmt;
+          }
 
-      if (error) throw error;
+          const instDate = new Date(expenseDate + "T00:00:00");
+          instDate.setMonth(instDate.getMonth() + (i - 1));
+          const dateString = instDate.toISOString().split("T")[0];
+
+          const label = `[${i}/${instCount}] ${rawDesc}`;
+          const metaData = {
+            desc: label,
+            costType: expenseCostType,
+            cardId: expenseCardId,
+            installment: { current: i, total: instCount }
+          };
+
+          const finalDesc = `[${expenseResponsible}] META_JSON:${JSON.stringify(metaData)}`;
+
+          batch.push({
+            user_id: user.id,
+            type: "expense",
+            description: finalDesc,
+            amount: currentAmt,
+            date: dateString,
+            category: expenseCategory,
+            status: expenseStatus === "paid" ? "paid" : "pending",
+          });
+        }
+
+        const { error } = await supabase.from("transactions").insert(batch);
+        if (error) throw error;
+      } else {
+        // Lógica simples (à vista / pix)
+        const metaData = {
+          desc: rawDesc,
+          costType: expenseCostType,
+          cardId: isCard ? expenseCardId : null
+        };
+
+        const finalDesc = `[${expenseResponsible}] META_JSON:${JSON.stringify(metaData)}`;
+
+        const { error } = await supabase.from("transactions").insert({
+          user_id: user.id,
+          type: "expense",
+          description: finalDesc,
+          amount: baseAmount,
+          date: expenseDate,
+          category: expenseCategory,
+          status: expenseStatus === "paid" ? "paid" : "pending",
+        });
+
+        if (error) throw error;
+      }
 
       setExpenseDesc("");
       setExpenseLocation("");
       setExpenseAmount("");
       setExpenseDate(new Date().toISOString().split("T")[0]);
       setExpenseResponsible("Os dois");
+      setExpenseCostType("variable");
+      setExpensePaymentMethod("cash");
+      setExpenseIsInstallments(false);
+      setExpenseInstallmentsCount("3");
+      setExpenseStatus("paid");
 
       await fetchTransactions();
     } catch (err: any) {
@@ -180,10 +322,11 @@ function TransactionsPage() {
   const handleOpenPayModal = (transaction: any) => {
     setPayTransaction(transaction);
     setPayAmount(transaction.amount.toString());
-    setPayDate(new Date().toISOString().split("T")[0]);
+    setOpenPay(true);
   };
 
-  const handleConfirmPayment = async () => {
+  const handlePayBill = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!payTransaction || !payAmount || !payDate) return;
     setActionLoading(true);
 
@@ -191,35 +334,33 @@ function TransactionsPage() {
       const { error } = await supabase
         .from("transactions")
         .update({
-          status: "paid", // database-compatible status value
+          status: "paid",
           amount: parseFloat(payAmount),
           date: payDate,
         })
         .eq("id", payTransaction.id);
 
       if (error) throw error;
+
+      setOpenPay(false);
       setPayTransaction(null);
       await fetchTransactions();
     } catch (err: any) {
-      alert("Erro ao registrar pagamento: " + err.message);
+      alert("Erro ao baixar lançamento: " + err.message);
     } finally {
       setActionLoading(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Deseja realmente excluir esta linha da planilha?")) return;
-    setActionLoading(true);
-
-    try {
-      const { error } = await supabase.from("transactions").delete().eq("id", id);
-
-      if (error) throw error;
-      await fetchTransactions();
-    } catch (err: any) {
-      alert("Erro ao excluir: " + err.message);
-    } finally {
-      setActionLoading(false);
+    if (confirm("Tem certeza que deseja excluir este lançamento?")) {
+      try {
+        const { error } = await supabase.from("transactions").delete().eq("id", id);
+        if (error) throw error;
+        await fetchTransactions();
+      } catch (err: any) {
+        alert("Erro ao excluir: " + err.message);
+      }
     }
   };
 
@@ -247,32 +388,15 @@ function TransactionsPage() {
   };
 
   const parseResponsible = (description: string) => {
-    const desc = String(description || "");
-    if (desc.startsWith("DEBT_JSON:")) {
-      try {
-        const data = JSON.parse(desc.substring(10));
-        return { name: "Os dois", cleanDesc: `Dívida: ${data.name}` };
-      } catch (e) {
-        return { name: "Os dois", cleanDesc: "Dívida" };
-      }
-    }
-    if (desc.startsWith("[Jack] ")) {
-      return { name: "Jack", cleanDesc: desc.replace("[Jack] ", "") };
-    }
-    if (desc.startsWith("[Rangel] ")) {
-      return { name: "Rangel", cleanDesc: desc.replace("[Rangel] ", "") };
-    }
-    if (desc.startsWith("[Os dois] ")) {
-      return { name: "Os dois", cleanDesc: desc.replace("[Os dois] ", "") };
-    }
-    return { name: "Os dois", cleanDesc: desc };
+    const meta = parseMeta(description);
+    return { name: meta.responsible, cleanDesc: meta.cleanDesc };
   };
 
   const filteredTransactions = transactions
     .filter((t) => t.type === activeTab)
     .filter(
       (t) =>
-        (t.description || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        parseMeta(t.description).cleanDesc.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (t.category || "").toLowerCase().includes(searchTerm.toLowerCase()),
     );
 
@@ -346,7 +470,7 @@ function TransactionsPage() {
         <Card className="border border-border/80 shadow-sm bg-white p-5 rounded-2xl">
           <form
             onSubmit={handleAddIncome}
-            className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end"
+            className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end"
           >
             <div className="space-y-1.5 md:col-span-2">
               <span className="text-xs font-bold text-slate-500 ml-1">Fonte de Renda / Origem</span>
@@ -389,7 +513,7 @@ function TransactionsPage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <span className="text-xs font-bold text-slate-500 ml-1">Data de Recebimento</span>
+                <span className="text-xs font-bold text-slate-500 ml-1">Data</span>
                 <Input
                   required
                   type="date"
@@ -400,10 +524,24 @@ function TransactionsPage() {
               </div>
             </div>
 
+            <div className="space-y-1.5">
+              <span className="text-xs font-bold text-slate-500 ml-1">Situação</span>
+              <Select value={incomeStatus} onValueChange={setIncomeStatus}>
+                <SelectTrigger className="bg-slate-100 text-[#0B1120] border border-slate-200 focus:bg-white h-11 rounded-lg">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="paid">Pago</SelectItem>
+                  <SelectItem value="pending">Pendente</SelectItem>
+                  <SelectItem value="overdue">Atrasado</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             <Button
               type="submit"
               disabled={actionLoading}
-              className="md:col-span-4 h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center justify-center gap-2 rounded-xl transition-all mt-2"
+              className="md:col-span-5 h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center justify-center gap-2 rounded-xl transition-all mt-2"
             >
               {actionLoading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -421,116 +559,192 @@ function TransactionsPage() {
         <Card className="border border-border/80 shadow-sm bg-white p-5 rounded-2xl">
           <form
             onSubmit={handleAddExpense}
-            className="grid grid-cols-1 md:grid-cols-6 gap-4 items-end"
+            className="space-y-4"
           >
-            <div className="space-y-1.5 md:col-span-2 lg:col-span-2">
-              <span className="text-xs font-bold text-slate-500 ml-1">
-                O que gastou? (Descrição)
-              </span>
-              <Input
-                required
-                placeholder="Ex: Talão de Luz, Gasolina, Net, Compra do Mês..."
-                value={expenseDesc}
-                onChange={(e) => setExpenseDesc(e.target.value)}
-                className="bg-slate-100 text-[#0B1120] placeholder:text-slate-400 border border-slate-200 focus:bg-white h-11 rounded-lg"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <span className="text-xs font-bold text-slate-500 ml-1">
-                Onde comprou? (Estabelecimento)
-              </span>
-              <Input
-                placeholder="Ex: Cemig, Posto, OpenAI, Mercado"
-                value={expenseLocation}
-                onChange={(e) => setExpenseLocation(e.target.value)}
-                className="bg-slate-100 text-[#0B1120] placeholder:text-slate-400 border border-slate-200 focus:bg-white h-11 rounded-lg"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <span className="text-xs font-bold text-slate-500 ml-1">
-                Tipo de Gasto / Categoria
-              </span>
-              <Select value={expenseCategory} onValueChange={setExpenseCategory}>
-                <SelectTrigger className="bg-slate-100 text-[#0B1120] border border-slate-200 focus:bg-white h-11 rounded-lg">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Casa - Água">Casa - Água</SelectItem>
-                  <SelectItem value="Casa - Luz">Casa - Luz</SelectItem>
-                  <SelectItem value="Casa - Internet">Casa - Internet</SelectItem>
-                  <SelectItem value="Casa - Mercado / Compras">Casa - Mercado / Compras</SelectItem>
-                  <SelectItem value="Moto - Gasolina">Moto - Gasolina</SelectItem>
-                  <SelectItem value="Moto - Peças / Manutenção">
-                    Moto - Peças / Manutenção
-                  </SelectItem>
-                  <SelectItem value="IA - Ferramentas (ChatGPT, Gemini...)">
-                    IA - Ferramentas
-                  </SelectItem>
-                  <SelectItem value="Cartão - Nubank">Cartão - Nubank</SelectItem>
-                  <SelectItem value="Cartão - Inter">Cartão - Inter</SelectItem>
-                  <SelectItem value="Cartão - Outro Cartão">Cartão - Outro Cartão</SelectItem>
-                  <SelectItem value="Banco - PIX Enviado">Banco - PIX Enviado</SelectItem>
-                  <SelectItem value="Outros Gastos">Outros Gastos</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:col-span-2 lg:col-span-2">
-              <div className="space-y-1.5 col-span-1">
-                <span className="text-xs font-bold text-slate-500 ml-1">Valor (R$)</span>
+            <div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
+              <div className="space-y-1.5 md:col-span-2 lg:col-span-2">
+                <span className="text-xs font-bold text-slate-500 ml-1">
+                  O que gastou? (Descrição)
+                </span>
                 <Input
                   required
-                  type="number"
-                  step="0.01"
-                  placeholder="0.00"
-                  value={expenseAmount}
-                  onChange={(e) => setExpenseAmount(e.target.value)}
+                  placeholder="Ex: Talão de Luz, Gasolina, Net, Compra do Mês..."
+                  value={expenseDesc}
+                  onChange={(e) => setExpenseDesc(e.target.value)}
                   className="bg-slate-100 text-[#0B1120] placeholder:text-slate-400 border border-slate-200 focus:bg-white h-11 rounded-lg"
                 />
               </div>
-              <div className="space-y-1.5 col-span-1">
-                <span className="text-xs font-bold text-slate-500 ml-1">Data</span>
+
+              <div className="space-y-1.5">
+                <span className="text-xs font-bold text-slate-500 ml-1">
+                  Onde comprou? (Estabelecimento)
+                </span>
                 <Input
-                  required
-                  type="date"
-                  value={expenseDate}
-                  onChange={(e) => setExpenseDate(e.target.value)}
-                  className="bg-slate-100 text-[#0B1120] border border-slate-200 focus:bg-white h-11 rounded-lg"
+                  placeholder="Ex: Cemig, Posto, OpenAI, Mercado"
+                  value={expenseLocation}
+                  onChange={(e) => setExpenseLocation(e.target.value)}
+                  className="bg-slate-100 text-[#0B1120] placeholder:text-slate-400 border border-slate-200 focus:bg-white h-11 rounded-lg"
                 />
               </div>
-              <div className="space-y-1.5 col-span-1">
-                <span className="text-xs font-bold text-slate-500 ml-1">Situação</span>
-                <Select value={expenseStatus} onValueChange={setExpenseStatus}>
+
+              <div className="space-y-1.5">
+                <span className="text-xs font-bold text-slate-500 ml-1">
+                  Tipo de Gasto / Categoria
+                </span>
+                <Select value={expenseCategory} onValueChange={setExpenseCategory}>
                   <SelectTrigger className="bg-slate-100 text-[#0B1120] border border-slate-200 focus:bg-white h-11 rounded-lg">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Pago">Já Pago</SelectItem>
-                    <SelectItem value="Pendente">A Pagar</SelectItem>
+                    <SelectItem value="Casa - Água">Casa - Água</SelectItem>
+                    <SelectItem value="Casa - Luz">Casa - Luz</SelectItem>
+                    <SelectItem value="Casa - Internet">Casa - Internet</SelectItem>
+                    <SelectItem value="Casa - Mercado / Compras">Casa - Mercado / Compras</SelectItem>
+                    <SelectItem value="Moto - Gasolina">Moto - Gasolina</SelectItem>
+                    <SelectItem value="Moto - Peças / Manutenção">
+                      Moto - Peças / Manutenção
+                    </SelectItem>
+                    <SelectItem value="IA - Ferramentas (ChatGPT, Gemini...)">
+                      IA - Ferramentas
+                    </SelectItem>
+                    <SelectItem value="Cartão - Nubank">Cartão - Nubank</SelectItem>
+                    <SelectItem value="Cartão - Inter">Cartão - Inter</SelectItem>
+                    <SelectItem value="Cartão - Outro Cartão">Cartão - Outro Cartão</SelectItem>
+                    <SelectItem value="Banco - PIX Enviado">Banco - PIX Enviado</SelectItem>
+                    <SelectItem value="Outros Gastos">Outros Gastos</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-1.5 col-span-1">
-                <span className="text-xs font-bold text-slate-500 ml-1">Quem Gastou?</span>
-                <Select value={expenseResponsible} onValueChange={setExpenseResponsible}>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:col-span-2 lg:col-span-2">
+                <div className="space-y-1.5 col-span-1">
+                  <span className="text-xs font-bold text-slate-500 ml-1">Valor (R$)</span>
+                  <Input
+                    required
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={expenseAmount}
+                    onChange={(e) => setExpenseAmount(e.target.value)}
+                    className="bg-slate-100 text-[#0B1120] placeholder:text-slate-400 border border-slate-200 focus:bg-white h-11 rounded-lg"
+                  />
+                </div>
+                <div className="space-y-1.5 col-span-1">
+                  <span className="text-xs font-bold text-slate-500 ml-1">Data</span>
+                  <Input
+                    required
+                    type="date"
+                    value={expenseDate}
+                    onChange={(e) => setExpenseDate(e.target.value)}
+                    className="bg-slate-100 text-[#0B1120] border border-slate-200 focus:bg-white h-11 rounded-lg"
+                  />
+                </div>
+                <div className="space-y-1.5 col-span-1">
+                  <span className="text-xs font-bold text-slate-500 ml-1">Situação</span>
+                  <Select value={expenseStatus} onValueChange={setExpenseStatus}>
+                    <SelectTrigger className="bg-slate-100 text-[#0B1120] border border-slate-200 focus:bg-white h-11 rounded-lg">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="paid">Pago</SelectItem>
+                      <SelectItem value="pending">Pendente</SelectItem>
+                      <SelectItem value="overdue">Atrasado</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5 col-span-1">
+                  <span className="text-xs font-bold text-slate-500 ml-1">Quem Gastou?</span>
+                  <Select value={expenseResponsible} onValueChange={setExpenseResponsible}>
+                    <SelectTrigger className="bg-slate-100 text-[#0B1120] border border-slate-200 focus:bg-white h-11 rounded-lg">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Jack">Jack</SelectItem>
+                      <SelectItem value="Rangel">Rangel</SelectItem>
+                      <SelectItem value="Os dois">Os dois</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+
+            {/* Segunda linha de campos avançados de classificação e pagamento */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end mt-2 pt-4 border-t border-slate-100">
+              <div className="space-y-1.5">
+                <span className="text-xs font-bold text-slate-500 ml-1">Classificação</span>
+                <Select value={expenseCostType} onValueChange={setExpenseCostType}>
                   <SelectTrigger className="bg-slate-100 text-[#0B1120] border border-slate-200 focus:bg-white h-11 rounded-lg">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Jack">Jack</SelectItem>
-                    <SelectItem value="Rangel">Rangel</SelectItem>
-                    <SelectItem value="Os dois">Os dois</SelectItem>
+                    <SelectItem value="variable">Custo Variável</SelectItem>
+                    <SelectItem value="fixed">Custo Fixo</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+
+              <div className="space-y-1.5">
+                <span className="text-xs font-bold text-slate-500 ml-1">Forma de Pagamento</span>
+                <Select value={expensePaymentMethod} onValueChange={setExpensePaymentMethod}>
+                  <SelectTrigger className="bg-slate-100 text-[#0B1120] border border-slate-200 focus:bg-white h-11 rounded-lg">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="cash">PIX / Dinheiro</SelectItem>
+                    <SelectItem value="card">Cartão de Crédito</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {expensePaymentMethod === "card" && (
+                <div className="space-y-1.5">
+                  <span className="text-xs font-bold text-slate-500 ml-1">Qual Cartão?</span>
+                  <Select value={expenseCardId} onValueChange={setExpenseCardId}>
+                    <SelectTrigger className="bg-slate-100 text-[#0B1120] border border-slate-200 focus:bg-white h-11 rounded-lg">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {cards.map((c) => (
+                        <SelectItem key={c} value={c}>{c}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {expensePaymentMethod === "card" && (
+                <div className="flex items-center gap-4 p-2 bg-slate-50 rounded-lg border border-slate-200 h-11">
+                  <label className="flex items-center gap-2 text-xs font-bold text-slate-600 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={expenseIsInstallments}
+                      onChange={(e) => setExpenseIsInstallments(e.target.checked)}
+                      className="rounded border-slate-300 text-primary focus:ring-primary w-4 h-4 cursor-pointer"
+                    />
+                    Parcelado?
+                  </label>
+                  {expenseIsInstallments && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-slate-400">Parc.</span>
+                      <Input
+                        type="number"
+                        min="2"
+                        max="60"
+                        required
+                        value={expenseInstallmentsCount}
+                        onChange={(e) => setExpenseInstallmentsCount(e.target.value)}
+                        className="w-14 h-8 text-center bg-white border border-slate-200 rounded text-[#0B1120] font-bold p-1"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <Button
               type="submit"
               disabled={actionLoading}
-              className="md:col-span-5 lg:col-span-6 h-11 bg-rose-600 hover:bg-rose-700 text-white font-bold flex items-center justify-center gap-2 rounded-xl transition-all mt-2"
+              className="w-full h-11 bg-rose-600 hover:bg-rose-700 text-white font-bold flex items-center justify-center gap-2 rounded-xl transition-all"
             >
               {actionLoading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -649,10 +863,10 @@ function TransactionsPage() {
             </DialogTitle>
           </DialogHeader>
           {payTransaction && (
-            <div className="space-y-5 pt-3">
+            <form onSubmit={handlePayBill} className="space-y-5 pt-3">
               <div className="p-3 bg-slate-100/50 rounded-xl border border-slate-200 text-sm text-[#0B1120] space-y-1">
                 <div>
-                  Conta: <strong className="font-bold">{payTransaction.description}</strong>
+                  Conta: <strong className="font-bold">{parseResponsible(payTransaction.description).cleanDesc}</strong>
                 </div>
                 <div className="text-xs text-slate-500">
                   Valor registrado: {formatCurrency(payTransaction.amount)}
@@ -689,7 +903,7 @@ function TransactionsPage() {
 
               <div className="flex gap-3 pt-2">
                 <Button
-                  onClick={handleConfirmPayment}
+                  type="submit"
                   disabled={actionLoading}
                   className="flex-1 h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-md"
                 >
@@ -701,6 +915,7 @@ function TransactionsPage() {
                   Dar Baixa
                 </Button>
                 <Button
+                  type="button"
                   variant="outline"
                   onClick={() => setPayTransaction(null)}
                   className="flex-1 h-11 border border-slate-200 text-slate-700 hover:bg-slate-50 font-bold rounded-xl"
@@ -708,7 +923,7 @@ function TransactionsPage() {
                   Cancelar
                 </Button>
               </div>
-            </div>
+            </form>
           )}
         </DialogContent>
       </Dialog>

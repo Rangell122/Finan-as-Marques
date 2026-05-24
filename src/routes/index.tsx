@@ -104,6 +104,58 @@ function SummaryCard({
   );
 }
 
+const parseMeta = (description: string) => {
+  const raw = String(description || "");
+  let responsible = "Os dois";
+  let cleanDesc = raw;
+  let costType = "variable";
+  let cardId = null;
+  let installment = null;
+
+  let remaining = raw;
+  if (remaining.startsWith("[Jack] ")) {
+    responsible = "Jack";
+    remaining = remaining.replace("[Jack] ", "");
+  } else if (remaining.startsWith("[Rangel] ")) {
+    responsible = "Rangel";
+    remaining = remaining.replace("[Rangel] ", "");
+  } else if (remaining.startsWith("[Os dois] ")) {
+    responsible = "Os dois";
+    remaining = remaining.replace("[Os dois] ", "");
+  }
+
+  if (remaining.startsWith("META_JSON:")) {
+    try {
+      const meta = JSON.parse(remaining.substring(10));
+      cleanDesc = meta.desc || "";
+      if (meta.costType) costType = meta.costType;
+      if (meta.cardId) cardId = meta.cardId;
+      if (meta.installment) installment = meta.installment;
+    } catch (e) {
+      console.error("Error parsing META_JSON:", e);
+      cleanDesc = remaining.substring(10);
+    }
+  } else if (remaining.startsWith("DEBT_JSON:")) {
+    try {
+      const meta = JSON.parse(remaining.substring(10));
+      cleanDesc = `Dívida: ${meta.name || ""}`;
+      costType = "fixed";
+    } catch (e) {
+      cleanDesc = "Dívida";
+    }
+  } else {
+    cleanDesc = remaining;
+  }
+
+  return {
+    cleanDesc,
+    responsible,
+    costType,
+    cardId,
+    installment
+  };
+};
+
 const isDebtTransaction = (t: any) => {
   if (!t.description) return false;
   const desc = String(t.description);
@@ -211,6 +263,15 @@ function Index() {
   const [payingDebt, setPayingDebt] = useState<any | null>(null);
   const [payAmountInput, setPayAmountInput] = useState("");
 
+  // Card configurations and states
+  const [cardsConfig, setCardsConfig] = useState<any[]>([]);
+  const [isEditCardsOpen, setIsEditCardsOpen] = useState(false);
+  const [tempCardsConfig, setTempCardsConfig] = useState<any[]>([]);
+  const [selectedFaturaCard, setSelectedFaturaCard] = useState<string | null>(null);
+
+  // Bill payment states
+  const [payTransaction, setPayTransaction] = useState<any | null>(null);
+
   // Debt form states
   const [debtName, setDebtName] = useState("");
   const [debtOriginalAmount, setDebtOriginalAmount] = useState("");
@@ -296,6 +357,28 @@ function Index() {
     };
 
     autoMigrate();
+  }, []);
+
+  // Card configurations local load
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("cartoes_config");
+        if (stored) {
+          setCardsConfig(JSON.parse(stored));
+        } else {
+          const defaults = [
+            { name: "Nubank", limit: 3000, dueDate: 10 },
+            { name: "Inter", limit: 2000, dueDate: 15 },
+            { name: "Sicredi", limit: 5000, dueDate: 20 }
+          ];
+          localStorage.setItem("cartoes_config", JSON.stringify(defaults));
+          setCardsConfig(defaults);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
   }, []);
 
   // Database action handlers
@@ -431,6 +514,46 @@ function Index() {
     }
   };
 
+  const handlePayBill = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!payTransaction || !payAmountInput) return;
+    setLoading(true);
+
+    try {
+      const { error } = await supabase
+        .from("transactions")
+        .update({
+          status: "paid",
+          amount: parseFloat(payAmountInput),
+        })
+        .eq("id", payTransaction.id);
+
+      if (error) throw error;
+
+      setPayTransaction(null);
+      setPayAmountInput("");
+      await fetchTransactions();
+    } catch (err: any) {
+      alert("Erro ao pagar conta: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOpenEditCards = () => {
+    setTempCardsConfig(JSON.parse(JSON.stringify(cardsConfig)));
+    setIsEditCardsOpen(true);
+  };
+
+  const handleSaveCardsConfig = (e: React.FormEvent) => {
+    e.preventDefault();
+    setCardsConfig(tempCardsConfig);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("cartoes_config", JSON.stringify(tempCardsConfig));
+    }
+    setIsEditCardsOpen(false);
+  };
+
   const handleDeleteDebt = async (id: string) => {
     if (!confirm("Tem certeza que deseja remover esta dívida do plano de quitação?")) return;
     setLoading(true);
@@ -473,25 +596,8 @@ function Index() {
     `R$ ${val.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
 
   const parseResponsible = (description: string) => {
-    const desc = String(description || "");
-    if (desc.startsWith("DEBT_JSON:")) {
-      try {
-        const data = JSON.parse(desc.substring(10));
-        return { name: "Os dois", cleanDesc: `Dívida: ${data.name}` };
-      } catch (e) {
-        return { name: "Os dois", cleanDesc: "Dívida" };
-      }
-    }
-    if (desc.startsWith("[Jack] ")) {
-      return { name: "Jack", cleanDesc: desc.replace("[Jack] ", "") };
-    }
-    if (desc.startsWith("[Rangel] ")) {
-      return { name: "Rangel", cleanDesc: desc.replace("[Rangel] ", "") };
-    }
-    if (desc.startsWith("[Os dois] ")) {
-      return { name: "Os dois", cleanDesc: desc.replace("[Os dois] ", "") };
-    }
-    return { name: "Os dois", cleanDesc: desc };
+    const meta = parseMeta(description);
+    return { name: meta.responsible, cleanDesc: meta.cleanDesc };
   };
 
   // Get unique months from database to populate selector
@@ -512,26 +618,51 @@ function Index() {
     (t) => t.date && t.date.substring(0, 7) === selectedMonth
   );
 
+  // Parse transactions with metadata
+  const parsedTransactions = filteredTransactions.map((t) => {
+    const meta = parseMeta(t.description);
+    return {
+      ...t,
+      cleanDesc: meta.cleanDesc,
+      responsible: meta.responsible,
+      costType: meta.costType,
+      cardId: meta.cardId,
+      installment: meta.installment,
+    };
+  });
+
   // General calculations for the selected month
-  const receitas = filteredTransactions
+  const receitas = parsedTransactions
     .filter((t) => t.type === "income")
     .reduce((acc, curr) => acc + curr.amount, 0);
 
-  // Exclude master debts from monthly expenses so they don't skew the monthly budget
-  const despesas = filteredTransactions
-    .filter((t) => t.type === "expense" && !isDebtTransaction(t))
+  // Exclude master debts and credit card purchases from cash flow despesas
+  const despesas = parsedTransactions
+    .filter((t) => t.type === "expense" && !isDebtTransaction(t) && t.cardId === null)
     .reduce((acc, curr) => acc + curr.amount, 0);
 
   const saldo = receitas - despesas;
 
-  // Credit card outstanding balance for the selected month
-  const dividasNubank = filteredTransactions
-    .filter((t) => t.category === "Cartão - Nubank")
+  // Dynamic credit card fatura calculation
+  const getCardFaturaSum = (cardName: string) => {
+    return parsedTransactions
+      .filter((t) => t.type === "expense" && t.cardId === cardName)
+      .reduce((acc, curr) => acc + curr.amount, 0);
+  };
+
+  const dividasTotais = cardsConfig.reduce((acc, card) => acc + getCardFaturaSum(card.name), 0);
+
+  // Custos Fixos vs Variáveis
+  const fixedExpenses = parsedTransactions
+    .filter((t) => t.type === "expense" && !isDebtTransaction(t) && t.costType === "fixed")
     .reduce((acc, curr) => acc + curr.amount, 0);
-  const dividasInter = filteredTransactions
-    .filter((t) => t.category === "Cartão - Inter")
+
+  const variableExpenses = parsedTransactions
+    .filter((t) => t.type === "expense" && !isDebtTransaction(t) && t.costType === "variable")
     .reduce((acc, curr) => acc + curr.amount, 0);
-  const dividasTotais = dividasNubank + dividasInter;
+
+  // Contas em aberto (qualquer situação com status Pendente)
+  const contasEmAberto = parsedTransactions.filter((t) => t.status === "Pendente");
 
   // Emergency reserves (configurable from state)
   const aportesReserva = transactions
@@ -557,7 +688,7 @@ function Index() {
 
   // Real spent by category in the selected month
   const categorySpent: { [key: string]: number } = {};
-  filteredTransactions
+  parsedTransactions
     .filter((t) => t.type === "expense" && !isDebtTransaction(t))
     .forEach((t) => {
       categorySpent[t.category] = (categorySpent[t.category] || 0) + t.amount;
@@ -905,18 +1036,183 @@ function Index() {
         </Card>
       </div>
 
+      {/* Gestão de Cartões de Crédito e Contas em Aberto */}
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
+        {/* Cartões de Crédito */}
+        <Card className="border border-border/80 p-6 bg-white rounded-2xl shadow-sm flex flex-col justify-between">
+          <div>
+            <div className="flex justify-between items-start mb-4">
+              <div className="space-y-1">
+                <h3 className="font-bold text-lg text-[#0B1120] flex items-center gap-3">
+                  <div className="p-2.5 bg-blue-50 rounded-xl text-[#1576D0]">
+                    <CreditCard className="w-5 h-5" />
+                  </div>
+                  <span>Cartões de Crédito</span>
+                  <button
+                    onClick={handleOpenEditCards}
+                    className="p-1 text-slate-400 hover:text-[#1576D0] hover:bg-slate-100 rounded transition-colors"
+                    title="Configurar Limites e Vencimentos"
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
+                  </button>
+                </h3>
+                <p className="text-xs text-slate-500">Acompanhe faturas, limites e vencimentos</p>
+              </div>
+            </div>
+
+            <div className="space-y-4 pt-2">
+              {cardsConfig.map((card) => {
+                const totalSpent = getCardFaturaSum(card.name);
+                const pctLimit = card.limit > 0 ? Math.min(Math.round((totalSpent / card.limit) * 100), 100) : 0;
+                
+                let progressBarColor = "bg-blue-500";
+                if (totalSpent > card.limit) {
+                  progressBarColor = "bg-rose-500";
+                } else if (totalSpent > card.limit * 0.8) {
+                  progressBarColor = "bg-amber-500";
+                }
+
+                return (
+                  <div key={card.name} className="p-3.5 border border-slate-100 rounded-xl bg-slate-50/50 hover:bg-slate-50 transition-colors flex flex-col gap-2">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <span className="font-bold text-sm text-slate-800 block">{card.name}</span>
+                        <span className="text-xs text-slate-500 font-medium">
+                          Vence dia {card.dueDate}
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-sm font-extrabold text-slate-800 block">
+                          {formatCurrency(totalSpent)}
+                        </span>
+                        <span className="text-[10px] text-slate-400">
+                          Limite: {formatCurrency(card.limit)}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="w-full bg-slate-200/70 h-1.5 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-300 ${progressBarColor}`}
+                        style={{ width: `${pctLimit}%` }}
+                      />
+                    </div>
+
+                    <div className="flex justify-between items-center pt-1">
+                      <span className="text-[10px] text-slate-400 font-medium">
+                        {pctLimit}% do limite usado
+                      </span>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setSelectedFaturaCard(card.name)}
+                        className="text-xs text-[#1576D0] hover:text-blue-700 h-6 px-2 font-bold"
+                      >
+                        Ver Fatura
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </Card>
+
+        {/* Contas em Aberto */}
+        <Card className="border border-border/80 p-6 bg-white rounded-2xl shadow-sm flex flex-col justify-between">
+          <div>
+            <div className="flex justify-between items-start mb-4">
+              <div className="space-y-1">
+                <h3 className="font-bold text-lg text-[#0B1120] flex items-center gap-3">
+                  <div className="p-2.5 bg-amber-50 rounded-xl text-amber-600">
+                    <AlertCircle className="w-5 h-5" />
+                  </div>
+                  <span>Contas em Aberto</span>
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Lançamentos pendentes ou atrasados para {formatMonthName(selectedMonth)}
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-3 max-h-[280px] overflow-y-auto pr-1">
+              {contasEmAberto.map((t) => {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const dueDate = new Date(t.date);
+                dueDate.setMinutes(dueDate.getMinutes() + dueDate.getTimezoneOffset());
+                dueDate.setHours(0, 0, 0, 0);
+                const overdue = dueDate < today;
+
+                return (
+                  <div key={t.id} className="p-3 border border-slate-100 rounded-xl bg-slate-50/50 hover:bg-slate-50 transition-colors flex items-center justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <span className="font-bold text-sm text-slate-800 block truncate">
+                        {t.cleanDesc}
+                      </span>
+                      <div className="flex gap-2 items-center text-xs text-slate-500 mt-1 flex-wrap">
+                        <span>{t.category}</span>
+                        <span>•</span>
+                        <span className={`font-semibold ${overdue ? "text-rose-600" : ""}`}>
+                          {overdue ? "Atrasou em: " : "Vence: "}
+                          {new Date(t.date).toLocaleDateString("pt-BR")}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <span className="font-extrabold text-sm text-slate-700">
+                        {formatCurrency(t.amount)}
+                      </span>
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          setPayTransaction(t);
+                          setPayAmountInput(t.amount.toString());
+                        }}
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-8 px-3 rounded-lg text-xs"
+                      >
+                        Pagar
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+              {contasEmAberto.length === 0 && (
+                <div className="text-center text-slate-400 text-xs py-12">
+                  Nenhuma conta em aberto para este mês. Tudo em dia!
+                </div>
+              )}
+            </div>
+          </div>
+        </Card>
+      </div>
+
       {/* Orçamento e Teto de Gastos */}
       <Card className="border border-border/80 p-6 bg-white rounded-2xl shadow-sm">
-        <div className="mb-6">
-          <h3 className="font-bold text-lg text-[#0B1120] flex items-center gap-3">
-            <div className="p-2.5 bg-amber-50 rounded-xl text-amber-600">
-              <Scale className="w-5 h-5" />
+        <div className="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-100 pb-4">
+          <div>
+            <h3 className="font-bold text-lg text-[#0B1120] flex items-center gap-3">
+              <div className="p-2.5 bg-amber-50 rounded-xl text-amber-600">
+                <Scale className="w-5 h-5" />
+              </div>
+              Teto de Gastos (Orçamento do Casal)
+            </h3>
+            <p className="text-xs text-slate-500">
+              Monitore o limite de gastos mensais por categoria para economizar em {formatMonthName(selectedMonth)}.
+            </p>
+          </div>
+          {/* Fixo vs Variável Summary */}
+          <div className="flex gap-4 items-center bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs shadow-sm">
+            <div>
+              <span className="text-slate-400 font-semibold block">CUSTOS FIXOS</span>
+              <span className="font-extrabold text-[#0B1120] text-sm">{formatCurrency(fixedExpenses)}</span>
             </div>
-            Teto de Gastos (Orçamento do Casal)
-          </h3>
-          <p className="text-xs text-slate-500">
-            Monitore o limite de gastos mensais por categoria para economizar em {formatMonthName(selectedMonth)}.
-          </p>
+            <div className="h-8 w-px bg-slate-200" />
+            <div>
+              <span className="text-slate-400 font-semibold block">CUSTOS VARIÁVEIS</span>
+              <span className="font-extrabold text-[#0B1120] text-sm">{formatCurrency(variableExpenses)}</span>
+            </div>
+          </div>
         </div>
 
         <div className="grid gap-5 grid-cols-1 md:grid-cols-2">
@@ -1286,6 +1582,160 @@ function Index() {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* DIALOG: Configurar Cartões */}
+      <Dialog open={isEditCardsOpen} onOpenChange={setIsEditCardsOpen}>
+        <DialogContent className="sm:max-w-[450px]">
+          <DialogHeader>
+            <DialogTitle>Configurar Limites e Vencimentos dos Cartões</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSaveCardsConfig} className="space-y-4 pt-4">
+            {tempCardsConfig.map((card, idx) => (
+              <div key={card.name} className="p-3 border border-slate-100 rounded-xl space-y-3 bg-slate-50/50">
+                <div className="font-bold text-slate-800 text-sm">{card.name}</div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-slate-500">Limite (R$)</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      required
+                      value={card.limit}
+                      onChange={(e) => {
+                        const updated = [...tempCardsConfig];
+                        updated[idx].limit = parseFloat(e.target.value) || 0;
+                        setTempCardsConfig(updated);
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-slate-500">Dia de Vencimento</Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      max="31"
+                      required
+                      value={card.dueDate}
+                      onChange={(e) => {
+                        const updated = [...tempCardsConfig];
+                        updated[idx].dueDate = parseInt(e.target.value, 10) || 1;
+                        setTempCardsConfig(updated);
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+            <DialogFooter className="pt-2">
+              <Button type="button" variant="ghost" onClick={() => setIsEditCardsOpen(false)}>
+                Cancelar
+              </Button>
+              <Button type="submit" className="bg-[#1576D0] hover:bg-blue-700 text-white">
+                Salvar Alterações
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* DIALOG: Ver Fatura Detalhada */}
+      <Dialog open={selectedFaturaCard !== null} onOpenChange={(open) => !open && setSelectedFaturaCard(null)}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Fatura Detalhada - {selectedFaturaCard} ({formatMonthName(selectedMonth)})</DialogTitle>
+          </DialogHeader>
+          <div className="pt-4 space-y-4">
+            <div className="max-h-[300px] overflow-y-auto border border-slate-100 rounded-xl">
+              <Table>
+                <TableBody>
+                  {selectedFaturaCard && parsedTransactions.filter(
+                    (t) => t.type === "expense" && t.cardId === selectedFaturaCard
+                  ).map((item) => (
+                    <TableRow key={item.id} className="hover:bg-slate-50">
+                      <TableCell className="py-2.5 font-medium text-xs text-slate-500">
+                        {new Date(item.date).toLocaleDateString("pt-BR")}
+                      </TableCell>
+                      <TableCell className="py-2.5 text-sm font-semibold text-slate-800">
+                        {item.cleanDesc}
+                      </TableCell>
+                      <TableCell className="py-2.5 text-right">
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 mr-2">
+                          {item.responsible}
+                        </span>
+                        <span className="font-extrabold text-sm text-slate-800">
+                          {formatCurrency(item.amount)}
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  {selectedFaturaCard && parsedTransactions.filter(
+                    (t) => t.type === "expense" && t.cardId === selectedFaturaCard
+                  ).length === 0 && (
+                    <TableRow>
+                      <TableCell className="text-center py-8 text-xs text-slate-500">
+                        Nenhuma compra registrada neste cartão para o mês selecionado.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+            <div className="flex justify-between items-center bg-slate-50 p-4 rounded-xl border border-slate-100">
+              <span className="font-bold text-slate-700 text-sm">Total da Fatura:</span>
+              <span className="font-extrabold text-lg text-rose-600">
+                {selectedFaturaCard ? formatCurrency(getCardFaturaSum(selectedFaturaCard)) : "R$ 0,00"}
+              </span>
+            </div>
+            <DialogFooter>
+              <Button onClick={() => setSelectedFaturaCard(null)} className="w-full bg-[#0B1120] hover:bg-slate-800 text-white font-bold h-10 rounded-xl">
+                Fechar Fatura
+              </Button>
+            </DialogFooter>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* DIALOG: Confirmar Pagamento de Conta */}
+      <Dialog open={payTransaction !== null} onOpenChange={(open) => !open && setPayTransaction(null)}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>Confirmar Pagamento de Conta</DialogTitle>
+          </DialogHeader>
+          {payTransaction && (
+            <form onSubmit={handlePayBill} className="space-y-4 pt-4">
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-sm space-y-1">
+                <div>
+                  Conta: <strong className="font-bold text-slate-800">{payTransaction.cleanDesc}</strong>
+                </div>
+                <div className="text-xs text-slate-500">
+                  Valor registrado: {formatCurrency(payTransaction.amount)}
+                </div>
+                <div className="text-xs text-slate-500">
+                  Vencimento original: {new Date(payTransaction.date).toLocaleDateString("pt-BR")}
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Valor Efetivo Pago (R$)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  required
+                  value={payAmountInput}
+                  onChange={(e) => setPayAmountInput(e.target.value)}
+                />
+              </div>
+              <DialogFooter className="pt-4 gap-2 sm:gap-0">
+                <Button type="button" variant="ghost" onClick={() => setPayTransaction(null)}>
+                  Cancelar
+                </Button>
+                <Button type="submit" className="bg-[#10b981] hover:bg-[#059669] text-white" disabled={loading}>
+                  Confirmar Pagamento
+                </Button>
+              </DialogFooter>
+            </form>
+          )}
         </DialogContent>
       </Dialog>
     </motion.div>
