@@ -63,76 +63,76 @@
 
 :root {
   --radius: 1rem;
-  --background: #071A3D; /* Azul Marinho Profundo */
-  --foreground: #F8FAFC; /* Branco Neutro */
-  --card: #F8FAFC; /* Cards brancos */
-  --card-foreground: #0B1120; /* Texto escuro no card */
-  --popover: #F8FAFC;
-  --popover-foreground: #0B1120;
-  
-  --primary: #D4A63A; /* Dourado Premium */
-  --primary-foreground: #071A3D; /* Texto marinho no botão dourado */
-  
-  --secondary: #0E2C63; /* Navy Soft */
-  --secondary-foreground: #F8FAFC;
-  
-  --muted: #D9E1EC; /* Cinza Claro */
-  --muted-foreground: #94A3B8; /* Cinza Médio */
-  
-  --accent: #F4C95D; /* Dourado Claro */
-  --accent-foreground: #071A3D;
-  
-  --destructive: #EF4444; /* Vermelho Despesa */
-  --destructive-foreground: #F8FAFC;
-  
-  --border: #D9E1EC; /* Cinza Claro */
-  --input: #D9E1EC;
-  --ring: #D4A63A;
-  
-  --chart-1: #22C55E; /* Verde Receita */
-  --chart-2: #EF4444; /* Vermelho Despesa */
-  --chart-3: #F59E0B; /* Ambar Pendência */
-  --chart-4: #3B82F6; /* Azul Info */
-  --chart-5: #D4A63A; /* Dourado Meta */
-  
-  --sidebar: #071A3D;
-  --sidebar-foreground: #F8FAFC;
-  --sidebar-primary: #D4A63A;
-  --sidebar-primary-foreground: #071A3D;
-  --sidebar-accent: #0E2C63;
-  --sidebar-accent-foreground: #F8FAFC;
-  --sidebar-border: #0E2C63;
-  --sidebar-ring: #D4A63A;
+  --background: #071a3d; /* Azul Marinho Profundo */
+  --foreground: #f8fafc; /* Branco Neutro */
+  --card: #f8fafc; /* Cards brancos */
+  --card-foreground: #0b1120; /* Texto escuro no card */
+  --popover: #f8fafc;
+  --popover-foreground: #0b1120;
+
+  --primary: #d4a63a; /* Dourado Premium */
+  --primary-foreground: #071a3d; /* Texto marinho no botão dourado */
+
+  --secondary: #0e2c63; /* Navy Soft */
+  --secondary-foreground: #f8fafc;
+
+  --muted: #d9e1ec; /* Cinza Claro */
+  --muted-foreground: #94a3b8; /* Cinza Médio */
+
+  --accent: #f4c95d; /* Dourado Claro */
+  --accent-foreground: #071a3d;
+
+  --destructive: #ef4444; /* Vermelho Despesa */
+  --destructive-foreground: #f8fafc;
+
+  --border: #d9e1ec; /* Cinza Claro */
+  --input: #d9e1ec;
+  --ring: #d4a63a;
+
+  --chart-1: #22c55e; /* Verde Receita */
+  --chart-2: #ef4444; /* Vermelho Despesa */
+  --chart-3: #f59e0b; /* Ambar Pendência */
+  --chart-4: #3b82f6; /* Azul Info */
+  --chart-5: #d4a63a; /* Dourado Meta */
+
+  --sidebar: #071a3d;
+  --sidebar-foreground: #f8fafc;
+  --sidebar-primary: #d4a63a;
+  --sidebar-primary-foreground: #071a3d;
+  --sidebar-accent: #0e2c63;
+  --sidebar-accent-foreground: #f8fafc;
+  --sidebar-border: #0e2c63;
+  --sidebar-ring: #d4a63a;
 }
 
 .dark {
-  --background: #071A3D;
-  --foreground: #F8FAFC;
-  --card: #0E2C63; /* No dark mode browser, os cards podem ficar Navy Soft */
-  --card-foreground: #F8FAFC;
-  --popover: #0E2C63;
-  --popover-foreground: #F8FAFC;
-  --primary: #D4A63A;
-  --primary-foreground: #071A3D;
-  --secondary: #0E2C63;
-  --secondary-foreground: #F8FAFC;
-  --muted: #0E2C63;
-  --muted-foreground: #94A3B8;
-  --accent: #F4C95D;
-  --accent-foreground: #071A3D;
-  --destructive: #EF4444;
-  --destructive-foreground: #F8FAFC;
-  --border: #0E2C63;
-  --input: #0E2C63;
-  --ring: #D4A63A;
-  --sidebar: #071A3D;
-  --sidebar-foreground: #F8FAFC;
-  --sidebar-primary: #D4A63A;
-  --sidebar-primary-foreground: #071A3D;
-  --sidebar-accent: #0E2C63;
-  --sidebar-accent-foreground: #F8FAFC;
-  --sidebar-border: #0E2C63;
-  --sidebar-ring: #D4A63A;
+  --background: #071a3d;
+  --foreground: #f8fafc;
+  --card: #0e2c63; /* No dark mode browser, os cards podem ficar Navy Soft */
+  --card-foreground: #f8fafc;
+  --popover: #0e2c63;
+  --popover-foreground: #f8fafc;
+  --primary: #d4a63a;
+  --primary-foreground: #071a3d;
+  --secondary: #0e2c63;
+  --secondary-foreground: #f8fafc;
+  --muted: #0e2c63;
+  --muted-foreground: #94a3b8;
+  --accent: #f4c95d;
+  --accent-foreground: #071a3d;
+  --destructive: #ef4444;
+  --destructive-foreground: #f8fafc;
+  --border: #0e2c63;
+  --input: #0e2c63;
+  --ring: #d4a63a;
+  --sidebar: #071a3d;
+  --sidebar-foreground: #f8fafc;
+  --sidebar-primary: #d4a63a;
+  --sidebar-primary-foreground: #071a3d;
+  --sidebar-accent: #0e2c63;
+  --sidebar-accent-foreground: #f8fafc;
+  --sidebar-border: #0e2c63;
+  --sidebar-ring: #d4a63a;
 }
 
 @layer base {

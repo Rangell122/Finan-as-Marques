@@ -560,104 +560,20 @@ function TransactionsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredTransactions.map((t) => {
-                    const overdue = isOverdue(t.date, t.status);
-                    const { name: respName, cleanDesc } = parseResponsible(t.description);
-                    return (
-                      <TableRow
-                        key={t.id}
-                        className="hover:bg-slate-50 border-b border-border transition-colors"
-                      >
-                        <TableCell className="font-medium text-slate-500 py-3.5 px-6">
-                          <span className="flex items-center gap-2 text-sm">
-                            <Calendar className="w-4 h-4 text-slate-400" />
-                            {formatDate(t.date)}
-                          </span>
-                        </TableCell>
-                        <TableCell className="font-bold text-[#0B1120] py-3.5 px-6">
-                          {cleanDesc}
-                        </TableCell>
-                        <TableCell className="py-3.5 px-6">
-                          <span className="flex items-center gap-2">
-                            {activeTab === "income" ? (
-                              <ArrowUpRight className="w-4 h-4 text-emerald-600" />
-                            ) : (
-                              <ArrowDownRight className="w-4 h-4 text-rose-500" />
-                            )}
-                            <Badge
-                              variant="secondary"
-                              className="font-semibold border-none px-2.5 py-0.5 rounded-lg text-xs bg-slate-100 text-slate-700 hover:bg-slate-200"
-                            >
-                              {t.category}
-                            </Badge>
-                          </span>
-                        </TableCell>
-                        {activeTab === "expense" && (
-                          <TableCell className="py-3.5 px-6">
-                            <span
-                              className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-bold ${
-                                respName === "Jack"
-                                  ? "bg-violet-100 text-violet-700"
-                                  : respName === "Rangel"
-                                    ? "bg-blue-100 text-blue-700"
-                                    : "bg-amber-100 text-amber-700"
-                              }`}
-                            >
-                              {respName}
-                            </span>
-                          </TableCell>
-                        )}
-                        <TableCell className="py-3.5 px-6">
-                          {t.status === "Pago" ? (
-                            <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-none font-bold text-xs px-2.5 py-0.5 rounded-md">
-                              Pago
-                            </Badge>
-                          ) : overdue ? (
-                            <Badge className="bg-rose-100 text-rose-700 hover:bg-rose-100 border-none font-bold text-xs px-2.5 py-0.5 rounded-md flex items-center gap-1 w-fit">
-                              <AlertTriangle className="w-3.5 h-3.5" />
-                              Atrasado
-                            </Badge>
-                          ) : (
-                            <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-none font-bold text-xs px-2.5 py-0.5 rounded-md">
-                              Pendente
-                            </Badge>
-                          )}
-                        </TableCell>
-                        <TableCell
-                          className={`text-right font-extrabold py-3.5 px-6 text-base ${
-                            activeTab === "income"
-                              ? "text-emerald-600"
-                              : t.status === "Pago"
-                                ? "text-rose-600"
-                                : "text-slate-500"
-                          }`}
-                        >
-                          {activeTab === "income" ? "+" : "-"} {formatCurrency(t.amount)}
-                        </TableCell>
-                        <TableCell className="py-3.5 px-6 text-center">
-                          <div className="flex items-center justify-center gap-1.5">
-                            {t.type === "expense" && t.status === "Pendente" && (
-                              <Button
-                                onClick={() => handleOpenPayModal(t)}
-                                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-8 px-2.5 rounded-lg text-xs flex items-center gap-1 shadow-sm transition-all"
-                              >
-                                <Check className="w-3.5 h-3.5" /> Pagar
-                              </Button>
-                            )}
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDelete(t.id)}
-                              disabled={actionLoading}
-                              className="text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg w-8 h-8"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
+                  {filteredTransactions.map((t) => (
+                    <DesktopTransactionRow
+                      key={t.id}
+                      t={t}
+                      activeTab={activeTab}
+                      handleOpenPayModal={handleOpenPayModal}
+                      handleDelete={handleDelete}
+                      actionLoading={actionLoading}
+                      isOverdue={isOverdue}
+                      parseResponsible={parseResponsible}
+                      formatDate={formatDate}
+                      formatCurrency={formatCurrency}
+                    />
+                  ))}
                   {filteredTransactions.length === 0 && (
                     <TableRow>
                       <TableCell
@@ -675,101 +591,20 @@ function TransactionsPage() {
 
           {/* PLANILHA RESPONSIVA CELULAR */}
           <div className="flex flex-col gap-3 md:hidden">
-            {filteredTransactions.map((t) => {
-              const overdue = isOverdue(t.date, t.status);
-              const { name: respName, cleanDesc } = parseResponsible(t.description);
-              return (
-                <Card
-                  key={t.id}
-                  className="border border-border/40 shadow-sm p-4 bg-white rounded-xl break-words whitespace-normal max-w-full overflow-hidden"
-                >
-                  <div className="flex justify-between items-start mb-2 gap-2">
-                    <div className="space-y-1">
-                      <div className="font-bold text-[#0B1120] text-base leading-tight">
-                        {cleanDesc}
-                      </div>
-                      <div className="text-xs text-slate-500 flex flex-wrap gap-2 items-center pt-1">
-                        <span className="flex items-center gap-1 font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded">
-                          <Calendar className="w-3 h-3 text-slate-400" />
-                          {t.status === "Pago" ? "Pago em: " : "Vence em: "}
-                          {formatDate(t.date)}
-                        </span>
-                        <Badge
-                          variant="outline"
-                          className="font-semibold text-[10px] border-slate-200 text-slate-700 px-2 py-0"
-                        >
-                          {t.category}
-                        </Badge>
-                        {activeTab === "expense" && (
-                          <span
-                            className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${
-                              respName === "Jack"
-                                ? "bg-violet-100 text-violet-700"
-                                : respName === "Rangel"
-                                  ? "bg-blue-100 text-blue-700"
-                                  : "bg-amber-100 text-amber-700"
-                            }`}
-                          >
-                            {respName}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div
-                      className={`text-right font-extrabold text-base ${
-                        activeTab === "income"
-                          ? "text-emerald-600"
-                          : t.status === "Pago"
-                            ? "text-rose-600"
-                            : "text-slate-500"
-                      }`}
-                    >
-                      {activeTab === "income" ? "+" : "-"} {formatCurrency(t.amount)}
-                    </div>
-                  </div>
-
-                  {/* Status no mobile */}
-                  <div className="mt-2.5 flex items-center justify-between pt-2 border-t border-slate-100">
-                    <div>
-                      {t.status === "Pago" ? (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-emerald-100 text-emerald-700">
-                          Pago
-                        </span>
-                      ) : overdue ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold bg-rose-100 text-rose-700">
-                          <AlertTriangle className="w-3.5 h-3.5" /> Atrasado
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-amber-100 text-amber-700">
-                          Pendente
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="flex gap-2">
-                      {t.type === "expense" && t.status === "Pendente" && (
-                        <Button
-                          size="sm"
-                          onClick={() => handleOpenPayModal(t)}
-                          className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs h-8 px-3 rounded-lg flex items-center gap-1 shadow-sm"
-                        >
-                          <Check className="w-3.5 h-3.5" /> Pagar
-                        </Button>
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDelete(t.id)}
-                        disabled={actionLoading}
-                        className="text-red-600 hover:bg-red-50 flex items-center gap-1.5 font-bold text-xs px-2.5 h-8 rounded-lg"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" /> Excluir
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
-              );
-            })}
+            {filteredTransactions.map((t) => (
+              <MobileTransactionCard
+                key={t.id}
+                t={t}
+                activeTab={activeTab}
+                handleOpenPayModal={handleOpenPayModal}
+                handleDelete={handleDelete}
+                actionLoading={actionLoading}
+                isOverdue={isOverdue}
+                parseResponsible={parseResponsible}
+                formatDate={formatDate}
+                formatCurrency={formatCurrency}
+              />
+            ))}
             {filteredTransactions.length === 0 && (
               <div className="text-center text-slate-500 py-16 bg-white rounded-xl border border-border/40">
                 Nenhum registro encontrado nesta aba da planilha.
@@ -857,5 +692,210 @@ function TransactionsPage() {
         </DialogContent>
       </Dialog>
     </motion.div>
+  );
+}
+
+function DesktopTransactionRow({
+  t,
+  activeTab,
+  handleOpenPayModal,
+  handleDelete,
+  actionLoading,
+  isOverdue,
+  parseResponsible,
+  formatDate,
+  formatCurrency,
+}: any) {
+  const overdue = isOverdue(t.date, t.status);
+  const { name: respName, cleanDesc } = parseResponsible(t.description);
+  return (
+    <TableRow className="hover:bg-slate-50 border-b border-border transition-colors">
+      <TableCell className="font-medium text-slate-500 py-3.5 px-6">
+        <span className="flex items-center gap-2 text-sm">
+          <Calendar className="w-4 h-4 text-slate-400" />
+          {formatDate(t.date)}
+        </span>
+      </TableCell>
+      <TableCell className="font-bold text-[#0B1120] py-3.5 px-6">{cleanDesc}</TableCell>
+      <TableCell className="py-3.5 px-6">
+        <span className="flex items-center gap-2">
+          {activeTab === "income" ? (
+            <ArrowUpRight className="w-4 h-4 text-emerald-600" />
+          ) : (
+            <ArrowDownRight className="w-4 h-4 text-rose-500" />
+          )}
+          <Badge
+            variant="secondary"
+            className="font-semibold border-none px-2.5 py-0.5 rounded-lg text-xs bg-slate-100 text-slate-700 hover:bg-slate-200"
+          >
+            {t.category}
+          </Badge>
+        </span>
+      </TableCell>
+      {activeTab === "expense" && (
+        <TableCell className="py-3.5 px-6">
+          <span
+            className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-bold ${
+              respName === "Jack"
+                ? "bg-violet-100 text-violet-700"
+                : respName === "Rangel"
+                  ? "bg-blue-100 text-blue-700"
+                  : "bg-amber-100 text-amber-700"
+            }`}
+          >
+            {respName}
+          </span>
+        </TableCell>
+      )}
+      <TableCell className="py-3.5 px-6">
+        {t.status === "Pago" ? (
+          <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-none font-bold text-xs px-2.5 py-0.5 rounded-md">
+            Pago
+          </Badge>
+        ) : overdue ? (
+          <Badge className="bg-rose-100 text-rose-700 hover:bg-rose-100 border-none font-bold text-xs px-2.5 py-0.5 rounded-md flex items-center gap-1 w-fit">
+            <AlertTriangle className="w-3.5 h-3.5" />
+            Atrasado
+          </Badge>
+        ) : (
+          <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-none font-bold text-xs px-2.5 py-0.5 rounded-md">
+            Pendente
+          </Badge>
+        )}
+      </TableCell>
+      <TableCell
+        className={`text-right font-extrabold py-3.5 px-6 text-base ${
+          activeTab === "income"
+            ? "text-emerald-600"
+            : t.status === "Pago"
+              ? "text-rose-600"
+              : "text-slate-500"
+        }`}
+      >
+        {activeTab === "income" ? "+" : "-"} {formatCurrency(t.amount)}
+      </TableCell>
+      <TableCell className="py-3.5 px-6 text-center">
+        <div className="flex items-center justify-center gap-1.5">
+          {t.type === "expense" && t.status === "Pendente" && (
+            <Button
+              onClick={() => handleOpenPayModal(t)}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-8 px-2.5 rounded-lg text-xs flex items-center gap-1 shadow-sm transition-all"
+            >
+              <Check className="w-3.5 h-3.5" /> Pagar
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => handleDelete(t.id)}
+            disabled={actionLoading}
+            className="text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg w-8 h-8"
+          >
+            <Trash2 className="w-4 h-4" />
+          </Button>
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+}
+
+function MobileTransactionCard({
+  t,
+  activeTab,
+  handleOpenPayModal,
+  handleDelete,
+  actionLoading,
+  isOverdue,
+  parseResponsible,
+  formatDate,
+  formatCurrency,
+}: any) {
+  const overdue = isOverdue(t.date, t.status);
+  const { name: respName, cleanDesc } = parseResponsible(t.description);
+  return (
+    <Card className="border border-border/40 shadow-sm p-4 bg-white rounded-xl break-words whitespace-normal max-w-full overflow-hidden">
+      <div className="flex justify-between items-start mb-2 gap-2">
+        <div className="space-y-1">
+          <div className="font-bold text-[#0B1120] text-base leading-tight">{cleanDesc}</div>
+          <div className="text-xs text-slate-500 flex flex-wrap gap-2 items-center pt-1">
+            <span className="flex items-center gap-1 font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded">
+              <Calendar className="w-3 h-3 text-slate-400" />
+              {t.status === "Pago" ? "Pago em: " : "Vence em: "}
+              {formatDate(t.date)}
+            </span>
+            <Badge
+              variant="outline"
+              className="font-semibold text-[10px] border-slate-200 text-slate-700 px-2 py-0"
+            >
+              {t.category}
+            </Badge>
+            {activeTab === "expense" && (
+              <span
+                className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${
+                  respName === "Jack"
+                    ? "bg-violet-100 text-violet-700"
+                    : respName === "Rangel"
+                      ? "bg-blue-100 text-blue-700"
+                      : "bg-amber-100 text-amber-700"
+                }`}
+              >
+                {respName}
+              </span>
+            )}
+          </div>
+        </div>
+        <div
+          className={`text-right font-extrabold text-base ${
+            activeTab === "income"
+              ? "text-emerald-600"
+              : t.status === "Pago"
+                ? "text-rose-600"
+                : "text-slate-500"
+          }`}
+        >
+          {activeTab === "income" ? "+" : "-"} {formatCurrency(t.amount)}
+        </div>
+      </div>
+
+      {/* Status no mobile */}
+      <div className="mt-2.5 flex items-center justify-between pt-2 border-t border-slate-100">
+        <div>
+          {t.status === "Pago" ? (
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-emerald-100 text-emerald-700">
+              Pago
+            </span>
+          ) : overdue ? (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold bg-rose-100 text-rose-700">
+              <AlertTriangle className="w-3.5 h-3.5" /> Atrasado
+            </span>
+          ) : (
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-amber-100 text-amber-700">
+              Pendente
+            </span>
+          )}
+        </div>
+
+        <div className="flex gap-2">
+          {t.type === "expense" && t.status === "Pendente" && (
+            <Button
+              size="sm"
+              onClick={() => handleOpenPayModal(t)}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs h-8 px-3 rounded-lg flex items-center gap-1 shadow-sm"
+            >
+              <Check className="w-3.5 h-3.5" /> Pagar
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleDelete(t.id)}
+            disabled={actionLoading}
+            className="text-red-600 hover:bg-red-50 flex items-center gap-1.5 font-bold text-xs px-2.5 h-8 rounded-lg"
+          >
+            <Trash2 className="w-3.5 h-3.5" /> Excluir
+          </Button>
+        </div>
+      </div>
+    </Card>
   );
 }
