@@ -577,7 +577,8 @@ function TransactionsPage() {
                     </TableCell>
                   </TableRow>
                 )}
-              </Table>
+              </TableBody>
+            </Table>
             </div>
           </Card>
 
