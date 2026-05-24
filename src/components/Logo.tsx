@@ -6,10 +6,10 @@ export function Logo({ className = "w-8 h-8" }: { className?: string }) {
       {/* Background container - Rounded premium card matching the squircle icon image */}
       <rect width="100" height="100" rx="26" fill="url(#logo-bg-grad)" />
 
-      {/* Golden F */}
+      {/* Blue F */}
       <path
         d="M20.5 73 V35 C20.5 29.5 25 25 30.5 25 H60.5 L54.5 32 H27 V43 H45.5 L38.5 50 H27 V73 Z"
-        fill="url(#gold-grad)"
+        fill="url(#blue-grad)"
       />
 
       {/* Silver/White M */}
@@ -32,17 +32,17 @@ export function Logo({ className = "w-8 h-8" }: { className?: string }) {
           <stop offset="50%" stopColor="#071A3D" />
           <stop offset="100%" stopColor="#040D1F" />
         </linearGradient>
-        {/* Rich Golden gradient matching #D4A63A and #F4C95D */}
+        {/* Rich Blue gradient matching #3b82f6 and #1576D0 */}
         <linearGradient
-          id="gold-grad"
+          id="blue-grad"
           x1="20.5"
           y1="25"
           x2="60.5"
           y2="73"
           gradientUnits="userSpaceOnUse"
         >
-          <stop offset="0%" stopColor="#F4C95D" /> {/* Gold light */}
-          <stop offset="100%" stopColor="#D4A63A" /> {/* Gold premium */}
+          <stop offset="0%" stopColor="#3b82f6" /> {/* Blue light */}
+          <stop offset="100%" stopColor="#1576D0" /> {/* Blue premium */}
         </linearGradient>
         {/* Silver-White gradient for the M */}
         <linearGradient

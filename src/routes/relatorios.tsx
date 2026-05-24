@@ -16,7 +16,7 @@ function Relatorios() {
     >
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold tracking-tight text-[#0B1120] flex items-center gap-2">
-          <LineChart className="w-6 h-6 text-[#D4A63A]" />
+          <LineChart className="w-6 h-6 text-[#1576D0]" />
           Relatórios
         </h1>
         <p className="text-slate-500 text-sm">Acompanhe a evolução do seu patrimônio.</p>

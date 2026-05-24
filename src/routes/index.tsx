@@ -24,11 +24,35 @@ import {
   ArrowUpCircle,
   ArrowDownCircle,
   TrendingDown,
+  Trash2,
+  Pencil,
+  Check,
+  Plus,
+  DollarSign,
+  AlertCircle,
+  Calendar,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import { AddTransactionDialog } from "@/components/AddTransactionDialog";
 import importData from "@/data/import.json";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -79,9 +103,82 @@ function SummaryCard({
   );
 }
 
+const isDebtTransaction = (t: any) => {
+  return (
+    t.description.startsWith("DEBT_JSON:") ||
+    t.description.toLowerCase().includes("divida-") ||
+    t.description.toLowerCase().includes("dívida-") ||
+    t.description.toLowerCase().includes("divida ") ||
+    t.description.toLowerCase().includes("dívida ")
+  );
+};
+
+const parseDebt = (t: any) => {
+  if (t.description.startsWith("DEBT_JSON:")) {
+    try {
+      const data = JSON.parse(t.description.substring(10));
+      return {
+        id: t.id,
+        name: data.name,
+        amount: t.amount,
+        originalAmount: data.originalAmount || t.amount,
+        renegotiated: data.renegotiated || false,
+        paymentType: data.paymentType || "À vista",
+        installmentsCount: data.installmentsCount || 1,
+        paidInstallments: data.paidInstallments || 0,
+        installmentAmount: data.installmentAmount || t.amount,
+        status: t.status,
+        date: t.date,
+        raw: t
+      };
+    } catch (e) {
+      console.error("Error parsing debt JSON:", e);
+    }
+  }
+
+  let cleanName = t.description;
+  if (cleanName.startsWith("[Os dois] ")) cleanName = cleanName.replace("[Os dois] ", "");
+  if (cleanName.startsWith("[Jack] ")) cleanName = cleanName.replace("[Jack] ", "");
+  if (cleanName.startsWith("[Rangel] ")) cleanName = cleanName.replace("[Rangel] ", "");
+  if (cleanName.startsWith("Divida-")) cleanName = cleanName.replace("Divida-", "");
+  if (cleanName.startsWith("Dívida-")) cleanName = cleanName.replace("Dívida-", "");
+
+  return {
+    id: t.id,
+    name: cleanName,
+    amount: t.amount,
+    originalAmount: t.amount,
+    renegotiated: false,
+    paymentType: "À vista",
+    installmentsCount: 1,
+    paidInstallments: t.status === "paid" || t.status === "Pago" ? 1 : 0,
+    installmentAmount: t.amount,
+    status: t.status,
+    date: t.date,
+    raw: t
+  };
+};
+
 function Index() {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedMonth, setSelectedMonth] = useState("2026-05");
+
+  // Debt action states
+  const [isAddDebtOpen, setIsAddDebtOpen] = useState(false);
+  const [isEditDebtOpen, setIsEditDebtOpen] = useState(false);
+  const [selectedDebt, setSelectedDebt] = useState<any | null>(null);
+  const [payingDebt, setPayingDebt] = useState<any | null>(null);
+  const [payAmountInput, setPayAmountInput] = useState("");
+
+  // Debt form states
+  const [debtName, setDebtName] = useState("");
+  const [debtOriginalAmount, setDebtOriginalAmount] = useState("");
+  const [debtPaymentType, setDebtPaymentType] = useState("Parcelado"); // "À vista" or "Parcelado"
+  const [debtInstallmentsCount, setDebtInstallmentsCount] = useState("10");
+  const [debtPaidInstallments, setDebtPaidInstallments] = useState("0");
+  const [debtInstallmentAmount, setDebtInstallmentAmount] = useState("");
+  const [debtStatus, setDebtStatus] = useState("Pendente");
 
   const fetchTransactions = async () => {
     try {
@@ -161,10 +258,189 @@ function Index() {
     autoMigrate();
   }, []);
 
+  // Database action handlers
+  const handleSaveDebt = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!debtName || !debtOriginalAmount) return;
+    setLoading(true);
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Usuário não autenticado");
+
+      const origAmt = parseFloat(debtOriginalAmount);
+      const instCount = parseInt(debtInstallmentsCount, 10) || 1;
+      const paidInst = parseInt(debtPaidInstallments, 10) || 0;
+      const instAmt = debtPaymentType === "Parcelado"
+        ? (debtInstallmentAmount ? parseFloat(debtInstallmentAmount) : origAmt / instCount)
+        : origAmt;
+
+      const debtData = {
+        name: debtName,
+        originalAmount: origAmt,
+        renegotiated: debtPaymentType === "Parcelado",
+        paymentType: debtPaymentType,
+        installmentsCount: instCount,
+        paidInstallments: paidInst,
+        installmentAmount: instAmt
+      };
+
+      const description = `DEBT_JSON:${JSON.stringify(debtData)}`;
+      const dbStatus = (paidInst >= instCount || debtStatus === "Pago") ? "paid" : "pending";
+
+      if (selectedDebt) {
+        const { error } = await supabase
+          .from("transactions")
+          .update({
+            description,
+            amount: debtPaymentType === "Parcelado" ? Math.max((instCount - paidInst) * instAmt, 0) : origAmt,
+            status: dbStatus
+          })
+          .eq("id", selectedDebt.id);
+
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("transactions").insert({
+          user_id: user.id,
+          type: "expense",
+          description,
+          amount: origAmt,
+          date: `${selectedMonth}-10`,
+          category: "Cartão - Outros",
+          status: dbStatus
+        });
+
+        if (error) throw error;
+      }
+
+      setIsAddDebtOpen(false);
+      setIsEditDebtOpen(false);
+      setSelectedDebt(null);
+      await fetchTransactions();
+    } catch (err: any) {
+      alert("Erro ao salvar dívida: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePayInstallment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!payingDebt || !payAmountInput) return;
+    setLoading(true);
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Usuário não autenticado");
+
+      const payAmt = parseFloat(payAmountInput);
+      const newPaid = payingDebt.paidInstallments + (payingDebt.paymentType === "Parcelado" ? 1 : 0);
+      const isCompleted = payingDebt.paymentType === "Parcelado"
+        ? newPaid >= payingDebt.installmentsCount
+        : (payingDebt.amount - payAmt) <= 0;
+
+      const updatedDebtData = {
+        name: payingDebt.name,
+        originalAmount: payingDebt.originalAmount,
+        renegotiated: payingDebt.renegotiated,
+        paymentType: payingDebt.paymentType,
+        installmentsCount: payingDebt.installmentsCount,
+        paidInstallments: payingDebt.paymentType === "Parcelado" ? newPaid : (isCompleted ? 1 : 0),
+        installmentAmount: payingDebt.installmentAmount
+      };
+
+      const description = `DEBT_JSON:${JSON.stringify(updatedDebtData)}`;
+      const dbStatus = isCompleted ? "paid" : "pending";
+
+      // 1. Update master debt record
+      const { error: updateError } = await supabase
+        .from("transactions")
+        .update({
+          description,
+          amount: payingDebt.paymentType === "Parcelado" ? Math.max((payingDebt.installmentsCount - newPaid) * payingDebt.installmentAmount, 0) : Math.max(payingDebt.amount - payAmt, 0),
+          status: dbStatus
+        })
+        .eq("id", payingDebt.id);
+
+      if (updateError) throw updateError;
+
+      // 2. Insert payment record
+      const paymentDesc = payingDebt.paymentType === "Parcelado"
+        ? `[Os dois] Pagamento Parcela - ${payingDebt.name} (${newPaid}/${payingDebt.installmentsCount})`
+        : `[Os dois] Amortização - ${payingDebt.name}`;
+
+      const { error: insertError } = await supabase.from("transactions").insert({
+        user_id: user.id,
+        type: "expense",
+        description: paymentDesc,
+        amount: payAmt,
+        date: `${selectedMonth}-10`,
+        category: "Cartão - Outros",
+        status: "paid"
+      });
+
+      if (insertError) throw insertError;
+
+      setPayingDebt(null);
+      setPayAmountInput("");
+      await fetchTransactions();
+    } catch (err: any) {
+      alert("Erro ao pagar dívida: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteDebt = async (id: string) => {
+    if (!confirm("Tem certeza que deseja remover esta dívida do plano de quitação?")) return;
+    setLoading(true);
+    try {
+      const { error } = await supabase.from("transactions").delete().eq("id", id);
+      if (error) throw error;
+      await fetchTransactions();
+    } catch (err: any) {
+      alert("Erro ao excluir dívida: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOpenEditDebt = (debt: any) => {
+    setSelectedDebt(debt);
+    setDebtName(debt.name);
+    setDebtOriginalAmount(debt.originalAmount.toString());
+    setDebtPaymentType(debt.paymentType);
+    setDebtInstallmentsCount(debt.installmentsCount.toString());
+    setDebtPaidInstallments(debt.paidInstallments.toString());
+    setDebtInstallmentAmount(debt.installmentAmount.toString());
+    setDebtStatus(debt.status);
+    setIsEditDebtOpen(true);
+  };
+
+  const handleOpenAddDebt = () => {
+    setSelectedDebt(null);
+    setDebtName("");
+    setDebtOriginalAmount("");
+    setDebtPaymentType("Parcelado");
+    setDebtInstallmentsCount("10");
+    setDebtPaidInstallments("0");
+    setDebtInstallmentAmount("");
+    setDebtStatus("Pendente");
+    setIsAddDebtOpen(true);
+  };
+
   const formatCurrency = (val: number) =>
     `R$ ${val.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
 
   const parseResponsible = (description: string) => {
+    if (description.startsWith("DEBT_JSON:")) {
+      try {
+        const data = JSON.parse(description.substring(10));
+        return { name: "Os dois", cleanDesc: `Dívida: ${data.name}` };
+      } catch (e) {
+        return { name: "Os dois", cleanDesc: "Dívida" };
+      }
+    }
     if (description.startsWith("[Jack] ")) {
       return { name: "Jack", cleanDesc: description.replace("[Jack] ", "") };
     }
@@ -177,49 +453,71 @@ function Index() {
     return { name: "Os dois", cleanDesc: description };
   };
 
-  // Cálculos financeiros gerais do mês atual
-  const receitas = transactions
+  // Get unique months from database to populate selector
+  const months = Array.from(
+    new Set(transactions.map((t) => t.date?.substring(0, 7)).filter(Boolean))
+  ).sort().reverse() as string[];
+
+  // Fallback default selection
+  useEffect(() => {
+    if (months.length > 0 && !months.includes(selectedMonth)) {
+      const hasMay = months.includes("2026-05");
+      setSelectedMonth(hasMay ? "2026-05" : months[0]);
+    }
+  }, [months]);
+
+  // Filter transactions for the selected month
+  const filteredTransactions = transactions.filter(
+    (t) => t.date && t.date.substring(0, 7) === selectedMonth
+  );
+
+  // General calculations for the selected month
+  const receitas = filteredTransactions
     .filter((t) => t.type === "income")
     .reduce((acc, curr) => acc + curr.amount, 0);
-  const despesas = transactions
-    .filter((t) => t.type === "expense")
+
+  // Exclude master debts from monthly expenses so they don't skew the monthly budget
+  const despesas = filteredTransactions
+    .filter((t) => t.type === "expense" && !isDebtTransaction(t))
     .reduce((acc, curr) => acc + curr.amount, 0);
+
   const saldo = receitas - despesas;
 
-  // Dívidas em aberto (Simulação baseada em cartões de crédito deste mês)
-  const dividasNubank = transactions
+  // Credit card outstanding balance for the selected month
+  const dividasNubank = filteredTransactions
     .filter((t) => t.category === "Cartão - Nubank")
     .reduce((acc, curr) => acc + curr.amount, 0);
-  const dividasInter = transactions
+  const dividasInter = filteredTransactions
     .filter((t) => t.category === "Cartão - Inter")
     .reduce((acc, curr) => acc + curr.amount, 0);
   const dividasTotais = dividasNubank + dividasInter;
 
-  // Reserva de Emergência: Calculado a partir de aportes em "Renda - Investimentos" + R$ 1.500 de base inicial
+  // Emergency reserves
   const aportesReserva = transactions
     .filter((t) => t.category === "Renda - Investimentos")
     .reduce((acc, curr) => acc + curr.amount, 0);
   const totalReserva = 1500 + aportesReserva;
-  const metaReserva = 12000; // Meta sugerida: 4 meses de custo básico (ex: R$ 3.000)
+  const metaReserva = 12000;
   const pctReserva = Math.min(Math.round((totalReserva / metaReserva) * 100), 100);
 
-  // Progresso de pagamento de dívidas (Meta: Quitar R$ 8.000 de saldo acumulado anterior)
-  // Cada Pix/Pagamento de despesa rotulado com amortização diminui a meta
-  const metaDividaAnterior = 8000;
-  const amortizacaoDivida = transactions
-    .filter(
-      (t) =>
-        t.description.toLowerCase().includes("quitação") ||
-        t.description.toLowerCase().includes("acordo"),
-    )
-    .reduce((acc, curr) => acc + curr.amount, 0);
-  const dividaRestante = Math.max(metaDividaAnterior - amortizacaoDivida, 0);
-  const pctQuitado = Math.round(((metaDividaAnterior - dividaRestante) / metaDividaAnterior) * 100);
+  // Debt Payoff Plan logic
+  const debtsList = transactions.filter(isDebtTransaction).map(parseDebt);
+  const totalDividaOriginal = debtsList.reduce((acc, curr) => acc + curr.originalAmount, 0);
+  const totalDividaRestante = debtsList.reduce((acc, curr) => {
+    if (curr.status === "paid" || curr.status === "Pago") return acc;
+    if (curr.paymentType === "Parcelado") {
+      return acc + Math.max((curr.installmentsCount - curr.paidInstallments) * curr.installmentAmount, 0);
+    } else {
+      return acc + curr.amount;
+    }
+  }, 0);
+  const totalDividaPaga = totalDividaOriginal - totalDividaRestante;
+  const pctQuitado = totalDividaOriginal > 0 ? Math.min(Math.round((totalDividaPaga / totalDividaOriginal) * 100), 100) : 0;
 
-  // Gastos reais por categoria
+  // Real spent by category in the selected month
   const categorySpent: { [key: string]: number } = {};
-  transactions
-    .filter((t) => t.type === "expense")
+  filteredTransactions
+    .filter((t) => t.type === "expense" && !isDebtTransaction(t))
     .forEach((t) => {
       categorySpent[t.category] = (categorySpent[t.category] || 0) + t.amount;
     });
@@ -229,19 +527,31 @@ function Index() {
     { name: "Despesas", value: despesas },
   ];
 
-  // Algoritmo de Dicas Financeiras do Assistente
+  const MONTH_NAMES = [
+    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+  ];
+
+  const formatMonthName = (ym: string) => {
+    if (!ym) return "";
+    const [y, m] = ym.split("-");
+    const mName = MONTH_NAMES[parseInt(m, 10) - 1] || m;
+    return `${mName} ${y}`;
+  };
+
+  // Automated tips
   const getFinancialTip = () => {
     if (saldo < 0) {
       return {
         title: "Alerta de Caixa Negativo",
-        text: "Seus gastos superaram as receitas este mês. Dica: revise a aba de despesas e adie qualquer compra não essencial até o mês que vem.",
+        text: `Seus gastos superaram as receitas em ${formatMonthName(selectedMonth)}. Dica: revise a aba de despesas e adie qualquer compra não essencial até o mês que vem.`,
         type: "danger",
       };
     }
     if (dividasTotais > receitas * 0.4) {
       return {
         title: "Atenção ao Cartão de Crédito",
-        text: `Suas faturas de cartão (R$ ${dividasTotais.toFixed(2)}) somam mais de 40% da sua renda. Evite parcelamentos para liberar seu caixa mensal.`,
+        text: `Suas faturas de cartão (R$ ${dividasTotais.toFixed(2)}) somam mais de 40% da sua renda em ${formatMonthName(selectedMonth)}. Evite parcelamentos para liberar seu caixa mensal.`,
         type: "warning",
       };
     }
@@ -254,7 +564,7 @@ function Index() {
     }
     return {
       title: "Finanças Equilibradas!",
-      text: "Seu saldo está positivo e seus tetos de gastos estão controlados. Parabéns pelo foco e compromisso do casal com a planilha!",
+      text: `Seu saldo de ${formatMonthName(selectedMonth)} está positivo e seus tetos de gastos estão controlados. Parabéns pelo foco e compromisso do casal!`,
       type: "success",
     };
   };
@@ -271,12 +581,36 @@ function Index() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Painel Familiar</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-3xl font-bold tracking-tight text-[#0B1120]">Painel Familiar</h1>
+          <p className="text-slate-500 text-sm">
             Resumo financeiro para controle de gastos e acúmulo de riqueza.
           </p>
         </div>
-        <AddTransactionDialog onAdd={fetchTransactions} />
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Month Selector */}
+          <div className="flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-[#1576D0]" />
+            <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+              <SelectTrigger className="w-[180px] bg-white border border-border text-slate-800 font-semibold rounded-xl shadow-sm h-11">
+                <SelectValue placeholder="Selecione o mês" />
+              </SelectTrigger>
+              <SelectContent>
+                {months.length > 0 ? (
+                  months.map((m) => (
+                    <SelectItem key={m} value={m} className="font-medium text-slate-700">
+                      {formatMonthName(m)}
+                    </SelectItem>
+                  ))
+                ) : (
+                  <SelectItem value="2026-05" className="font-medium text-slate-700">
+                    Maio 2026
+                  </SelectItem>
+                )}
+              </SelectContent>
+            </Select>
+          </div>
+          <AddTransactionDialog onAdd={fetchTransactions} />
+        </div>
       </div>
 
       {/* Cartão de Dicas Financeiras Automatizado */}
@@ -289,7 +623,7 @@ function Index() {
                 : tip.type === "warning"
                   ? "bg-amber-50 text-amber-600"
                   : tip.type === "info"
-                    ? "bg-emerald-50 text-emerald-600"
+                    ? "bg-blue-50 text-[#1576D0]"
                     : "bg-emerald-100 text-emerald-700"
             }`}
           >
@@ -377,39 +711,149 @@ function Index() {
           </div>
         </Card>
 
-        {/* Quitação de Dívidas */}
-        <Card className="border border-border/80 p-6 bg-white rounded-2xl shadow-sm">
-          <div className="flex justify-between items-start mb-4">
-            <div className="space-y-1">
-              <h3 className="font-bold text-lg text-[#0B1120] flex items-center gap-3">
-                <div className="p-2.5 bg-rose-50 rounded-xl text-rose-600">
-                  <HandCoins className="w-5 h-5" />
+        {/* Plano Quitação de Dívidas */}
+        <Card className="border border-border/80 p-6 bg-white rounded-2xl shadow-sm flex flex-col justify-between">
+          <div>
+            <div className="flex justify-between items-start mb-4">
+              <div className="space-y-1">
+                <h3 className="font-bold text-lg text-[#0B1120] flex items-center gap-3">
+                  <div className="p-2.5 bg-rose-50 rounded-xl text-rose-600">
+                    <HandCoins className="w-5 h-5" />
+                  </div>
+                  Plano Quitação de Dívidas
+                </h3>
+                <p className="text-xs text-slate-500">Organização e quitação de dívidas</p>
+              </div>
+              <div className="text-right">
+                <span className="font-extrabold text-lg text-[#0B1120]">
+                  {formatCurrency(totalDividaRestante)}
+                </span>
+                <span className="text-xs text-slate-500 block">
+                  Dívida Inicial: {formatCurrency(totalDividaOriginal)}
+                </span>
+              </div>
+            </div>
+
+            {/* Progresso de Quitação Geral */}
+            <div className="space-y-2 mb-6">
+              <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                <div
+                  className="bg-rose-500 h-full rounded-full transition-all duration-500"
+                  style={{ width: `${pctQuitado}%` }}
+                />
+              </div>
+              <div className="flex justify-between text-xs font-semibold text-slate-500">
+                <span>{pctQuitado}% Quitado</span>
+                <span>Economizou/Amortizou: {formatCurrency(totalDividaOriginal - totalDividaRestante)}</span>
+              </div>
+            </div>
+
+            {/* Lista Interativa de Dívidas */}
+            <div className="space-y-3 max-h-[220px] overflow-y-auto pr-1 border-t border-slate-100 pt-3">
+              {debtsList.map((debt) => {
+                const isPaid = debt.status === "paid" || debt.status === "Pago";
+                const isRenegotiated = debt.paymentType === "Parcelado";
+                const progressPct = isPaid 
+                  ? 100 
+                  : (isRenegotiated 
+                      ? Math.min(Math.round((debt.paidInstallments / debt.installmentsCount) * 100), 100)
+                      : Math.min(Math.round(((debt.originalAmount - debt.amount) / debt.originalAmount) * 100), 100)
+                    );
+
+                return (
+                  <div key={debt.id} className="p-3 border border-slate-100 rounded-xl bg-slate-50/50 hover:bg-slate-50 transition-colors flex flex-col gap-2">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <span className="font-bold text-sm text-slate-800 block">{debt.name}</span>
+                        <span className="text-xs text-slate-500">
+                          {isRenegotiated 
+                            ? `Acordo: ${debt.installmentsCount}x de ${formatCurrency(debt.installmentAmount)}` 
+                            : "À vista"
+                          }
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <span className={`text-sm font-extrabold block ${isPaid ? "text-emerald-600 line-through" : "text-rose-600"}`}>
+                          {isPaid ? "Quitada" : formatCurrency(debt.paymentType === "Parcelado" ? (debt.installmentsCount - debt.paidInstallments) * debt.installmentAmount : debt.amount)}
+                        </span>
+                        <span className="text-[10px] text-slate-400">
+                          {isRenegotiated ? `${debt.paidInstallments}/${debt.installmentsCount} pagas` : "Saldo pendente"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Progress indicator per debt */}
+                    <div className="w-full bg-slate-200/70 h-1.5 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-300 ${isPaid ? "bg-emerald-500" : "bg-rose-400"}`}
+                        style={{ width: `${progressPct}%` }}
+                      />
+                    </div>
+
+                    {/* Action buttons */}
+                    <div className="flex justify-between items-center pt-1 mt-1 border-t border-slate-200/40">
+                      <div>
+                        {isPaid ? (
+                          <Badge className="bg-emerald-100 text-emerald-700 text-[10px] font-bold border-none">
+                            Pago
+                          </Badge>
+                        ) : isRenegotiated ? (
+                          <Badge className="bg-blue-50 text-[#1576D0] text-[10px] font-bold border-none">
+                            Acordo Ativo
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-amber-50 text-amber-700 text-[10px] font-bold border-none">
+                            Sem Acordo
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        {!isPaid && (
+                          <button
+                            onClick={() => {
+                              setPayingDebt(debt);
+                              setPayAmountInput(debt.installmentAmount.toString());
+                            }}
+                            title="Lançar Pagamento"
+                            className="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 transition-colors"
+                          >
+                            <DollarSign className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleOpenEditDebt(debt)}
+                          title="Renegociar / Editar"
+                          className="p-1.5 bg-blue-50 text-[#1576D0] rounded-lg hover:bg-blue-100 transition-colors"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteDebt(debt.id)}
+                          title="Excluir"
+                          className="p-1.5 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 transition-colors"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+              {debtsList.length === 0 && (
+                <div className="text-center text-slate-400 text-xs py-6">
+                  Nenhuma dívida registrada no plano de quitação.
                 </div>
-                Plano Quitação de Dívidas
-              </h3>
-              <p className="text-xs text-slate-500">Esforço para livrar o orçamento familiar</p>
-            </div>
-            <div className="text-right">
-              <span className="font-extrabold text-lg text-[#0B1120]">
-                {formatCurrency(dividaRestante)}
-              </span>
-              <span className="text-xs text-slate-500 block">
-                Dívida Inicial: {formatCurrency(metaDividaAnterior)}
-              </span>
+              )}
             </div>
           </div>
-          <div className="space-y-3">
-            <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
-              <div
-                className="bg-rose-500 h-full rounded-full transition-all duration-500"
-                style={{ width: `${pctQuitado}%` }}
-              />
-            </div>
-            <div className="flex justify-between text-xs font-semibold text-slate-500">
-              <span>{pctQuitado}% Quitado</span>
-              <span>Dívida reduziu {formatCurrency(metaDividaAnterior - dividaRestante)}</span>
-            </div>
-          </div>
+
+          <Button 
+            onClick={handleOpenAddDebt} 
+            variant="outline" 
+            className="w-full mt-4 border-[#1576D0] text-[#1576D0] hover:bg-blue-50 h-10 font-bold rounded-xl"
+          >
+            <Plus className="w-4 h-4 mr-2" /> Adicionar Nova Dívida
+          </Button>
         </Card>
       </div>
 
@@ -423,7 +867,7 @@ function Index() {
             Teto de Gastos (Orçamento do Casal)
           </h3>
           <p className="text-xs text-slate-500">
-            Monitore o limite de gastos mensais por categoria para economizar.
+            Monitore o limite de gastos mensais por categoria para economizar em {formatMonthName(selectedMonth)}.
           </p>
         </div>
 
@@ -474,7 +918,7 @@ function Index() {
       {/* Gráfico e Últimos Lançamentos */}
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-7">
         <Card className="lg:col-span-4 p-6 border border-border/80 shadow-sm bg-white rounded-2xl w-full min-w-0 overflow-hidden">
-          <h2 className="text-lg font-bold mb-6 text-[#0B1120]">Balanço Receitas vs Despesas</h2>
+          <h2 className="text-lg font-bold mb-6 text-[#0B1120]">Balanço - {formatMonthName(selectedMonth)}</h2>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData}>
@@ -497,7 +941,7 @@ function Index() {
           <div className="overflow-x-auto w-full">
             <Table>
               <TableBody>
-                {transactions.slice(0, 5).map((t) => {
+                {filteredTransactions.slice(0, 5).map((t) => {
                   const { name: respName, cleanDesc } = parseResponsible(t.description);
                   return (
                     <TableRow
@@ -533,10 +977,10 @@ function Index() {
                     </TableRow>
                   );
                 })}
-                {transactions.length === 0 && !loading && (
+                {filteredTransactions.length === 0 && !loading && (
                   <TableRow>
                     <TableCell colSpan={2} className="text-center text-slate-500 py-8">
-                      Nenhuma transação cadastrada no Supabase.
+                      Nenhuma transação cadastrada para este mês.
                     </TableCell>
                   </TableRow>
                 )}
@@ -545,6 +989,216 @@ function Index() {
           </div>
         </Card>
       </div>
+
+      {/* DIALOGS FOR DEBT MANAGEMENT */}
+      {/* DIALOG: Nova Dívida */}
+      <Dialog open={isAddDebtOpen} onOpenChange={setIsAddDebtOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Adicionar Dívida ao Plano</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSaveDebt} className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label>Nome da Dívida / Credor</Label>
+              <Input
+                required
+                value={debtName}
+                onChange={(e) => setDebtName(e.target.value)}
+                placeholder="Ex: Empréstimo Zippy, Renner, Sicoob"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Valor Total Original (R$)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  required
+                  value={debtOriginalAmount}
+                  onChange={(e) => setDebtOriginalAmount(e.target.value)}
+                  placeholder="0.00"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Tipo de Quitação</Label>
+                <Select value={debtPaymentType} onValueChange={setDebtPaymentType}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Parcelado">Parcelado / Acordo</SelectItem>
+                    <SelectItem value="À vista">À vista</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {debtPaymentType === "Parcelado" && (
+              <div className="grid grid-cols-3 gap-2">
+                <div className="space-y-2">
+                  <Label>Total Parcelas</Label>
+                  <Input
+                    type="number"
+                    required
+                    value={debtInstallmentsCount}
+                    onChange={(e) => setDebtInstallmentsCount(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Pagas</Label>
+                  <Input
+                    type="number"
+                    required
+                    value={debtPaidInstallments}
+                    onChange={(e) => setDebtPaidInstallments(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Valor Parcela (R$)</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={debtInstallmentAmount}
+                    onChange={(e) => setDebtInstallmentAmount(e.target.value)}
+                    placeholder="Auto"
+                  />
+                </div>
+              </div>
+            )}
+
+            <Button type="submit" className="w-full mt-4 bg-[#1576D0] hover:bg-[#0d5ca5] text-white" disabled={loading}>
+              {loading ? "Salvando..." : "Salvar Dívida"}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* DIALOG: Renegociar/Editar Dívida */}
+      <Dialog open={isEditDebtOpen} onOpenChange={setIsEditDebtOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Renegociar / Editar Dívida</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSaveDebt} className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label>Nome da Dívida / Credor</Label>
+              <Input
+                required
+                value={debtName}
+                onChange={(e) => setDebtName(e.target.value)}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Valor Total Original (R$)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  required
+                  value={debtOriginalAmount}
+                  onChange={(e) => setDebtOriginalAmount(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Tipo de Quitação</Label>
+                <Select value={debtPaymentType} onValueChange={setDebtPaymentType}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Parcelado">Parcelado / Acordo</SelectItem>
+                    <SelectItem value="À vista">À vista</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {debtPaymentType === "Parcelado" && (
+              <div className="grid grid-cols-3 gap-2">
+                <div className="space-y-2">
+                  <Label>Total Parcelas</Label>
+                  <Input
+                    type="number"
+                    required
+                    value={debtInstallmentsCount}
+                    onChange={(e) => setDebtInstallmentsCount(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Pagas</Label>
+                  <Input
+                    type="number"
+                    required
+                    value={debtPaidInstallments}
+                    onChange={(e) => setDebtPaidInstallments(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Valor Parcela (R$)</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={debtInstallmentAmount}
+                    onChange={(e) => setDebtInstallmentAmount(e.target.value)}
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label>Status</Label>
+              <Select value={debtStatus} onValueChange={setDebtStatus}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Pendente">Pendente</SelectItem>
+                  <SelectItem value="Pago">Pago (Quitado)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <Button type="submit" className="w-full mt-4 bg-[#1576D0] hover:bg-[#0d5ca5] text-white" disabled={loading}>
+              {loading ? "Salvando..." : "Salvar Alterações"}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* DIALOG: Registrar Pagamento de Dívida */}
+      <Dialog open={payingDebt !== null} onOpenChange={(open) => !open && setPayingDebt(null)}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>Registrar Pagamento de Parcela</DialogTitle>
+          </DialogHeader>
+          {payingDebt && (
+            <form onSubmit={handlePayInstallment} className="space-y-4 pt-4">
+              <p className="text-sm text-slate-500 leading-relaxed">
+                Confirmar pagamento de parcela para a dívida: <strong className="text-slate-800">{payingDebt.name}</strong>.
+              </p>
+              <div className="space-y-2">
+                <Label>Valor do Pagamento / Amortização (R$)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  required
+                  value={payAmountInput}
+                  onChange={(e) => setPayAmountInput(e.target.value)}
+                  placeholder="0.00"
+                />
+              </div>
+              <DialogFooter className="pt-4 gap-2 sm:gap-0">
+                <Button type="button" variant="ghost" onClick={() => setPayingDebt(null)}>
+                  Cancelar
+                </Button>
+                <Button type="submit" className="bg-[#10b981] hover:bg-[#059669] text-white" disabled={loading}>
+                  {loading ? "Registrando..." : "Confirmar Pagamento"}
+                </Button>
+              </DialogFooter>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 }

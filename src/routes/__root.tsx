@@ -23,6 +23,7 @@ import {
   Check,
   Loader2,
   Settings,
+  Calculator,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -39,7 +40,7 @@ function SidebarContent() {
   return (
     <div className="flex flex-col h-full py-8 px-4 space-y-8 bg-sidebar text-sidebar-foreground">
       <div className="flex items-center gap-3 px-2">
-        <Logo className="w-9 h-9 drop-shadow-[0_0_8px_rgba(212,166,58,0.35)]" />
+        <Logo className="w-9 h-9 drop-shadow-[0_0_8px_rgba(21,118,208,0.35)]" />
         <span className="text-xl font-bold tracking-tight text-sidebar-foreground">
           Finanças Marques
         </span>
@@ -62,11 +63,20 @@ function SidebarContent() {
           Transações
         </Link>
         <Link
-          to="/"
+          to="/relatorios"
           className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-sidebar-accent transition-colors text-sm font-medium text-slate-300 hover:text-white"
+          activeProps={{ className: "bg-sidebar-accent text-primary font-bold" }}
         >
           <LineChart className="w-5 h-5" />
           Relatórios
+        </Link>
+        <Link
+          to="/calculadoras"
+          className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-sidebar-accent transition-colors text-sm font-medium text-slate-300 hover:text-white"
+          activeProps={{ className: "bg-sidebar-accent text-primary font-bold" }}
+        >
+          <Calculator className="w-5 h-5" />
+          Calculadoras
         </Link>
       </nav>
       <div className="mt-auto pt-8 border-t border-sidebar-border/50">
@@ -569,6 +579,15 @@ function RootComponent() {
                 <Wallet className="w-5 h-5 text-primary" />
                 Transações
               </Link>
+              <Link
+                to="/calculadoras"
+                onClick={() => setMenuOpen(false)}
+                className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-sidebar-accent transition-colors text-base font-semibold text-slate-300 hover:text-white border-b border-sidebar-border/30"
+                activeProps={{ className: "bg-sidebar-accent text-primary font-bold" }}
+              >
+                <Calculator className="w-5 h-5 text-primary" />
+                Calculadoras
+              </Link>
 
               {/* Relatórios Accordion */}
               <div>
@@ -622,7 +641,7 @@ function RootComponent() {
                   className="w-full flex items-center justify-between px-3 py-3 rounded-lg hover:bg-[#0E2C63] transition-colors text-base font-semibold text-slate-300 hover:text-white border-b border-[#0E2C63]/30"
                 >
                   <div className="flex items-center gap-3">
-                    <Settings className="w-5 h-5 text-[#D4A63A]" />
+                    <Settings className="w-5 h-5 text-[#1576D0]" />
                     <span>Configurações</span>
                   </div>
                   {settingsExpanded ? (
@@ -645,6 +664,13 @@ function RootComponent() {
                       className="block py-2 text-sm text-slate-300 hover:text-white"
                     >
                       Gerenciar Categorias
+                    </Link>
+                    <Link
+                      to="/calculadoras"
+                      onClick={() => setMenuOpen(false)}
+                      className="block py-2 text-sm text-slate-300 hover:text-white"
+                    >
+                      Calculadoras Financeiras
                     </Link>
                     <button
                       onClick={async () => {
@@ -774,20 +800,20 @@ function RootComponent() {
           {/* BALÃO FLUTUANTE DA IA ASSISTENTE FINANCEIRO */}
           <div className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-50 flex items-center justify-center">
             {/* Subtle glow background element */}
-            <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#D4A63A] via-emerald-500 to-blue-500 blur-md opacity-45 animate-pulse -z-10" />
+            <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#1576D0] via-emerald-500 to-blue-500 blur-md opacity-45 animate-pulse -z-10" />
 
             <button
               onClick={() => setAiOpen(!aiOpen)}
-              className={`rounded-full w-14 h-14 bg-[#071A3D]/95 backdrop-blur-md border border-[#D4A63A]/60 shadow-[0_0_20px_rgba(212,166,58,0.35)] hover:shadow-[0_0_25px_rgba(212,166,58,0.6)] transition-all duration-300 flex items-center justify-center group overflow-hidden ${
+              className={`rounded-full w-14 h-14 bg-[#071A3D]/95 backdrop-blur-md border border-[#1576D0]/60 shadow-[0_0_20px_rgba(21,118,208,0.35)] hover:shadow-[0_0_25px_rgba(21,118,208,0.6)] transition-all duration-300 flex items-center justify-center group overflow-hidden ${
                 aiOpen ? "rotate-90" : "hover:scale-110"
               }`}
             >
               {aiOpen ? (
-                <X className="w-6 h-6 text-[#D4A63A]" />
+                <X className="w-6 h-6 text-[#1576D0]" />
               ) : (
                 <div className="relative w-10 h-10 flex items-center justify-center">
                   {/* Glowing core */}
-                  <div className="absolute w-5 h-5 rounded-full bg-gradient-to-tr from-[#D4A63A] to-[#F4C95D] blur-[4px] opacity-75 group-hover:scale-125 transition-transform duration-300" />
+                  <div className="absolute w-5 h-5 rounded-full bg-gradient-to-tr from-[#1576D0] to-[#3b82f6] blur-[4px] opacity-75 group-hover:scale-125 transition-transform duration-300" />
 
                   {/* Sparkles icon */}
                   <Sparkles className="absolute w-4.5 h-4.5 text-white group-hover:rotate-12 transition-transform duration-300 z-10" />
@@ -801,7 +827,7 @@ function RootComponent() {
                       cx="50"
                       cy="50"
                       r="40"
-                      stroke="#D4A63A"
+                      stroke="#1576D0"
                       strokeWidth="4"
                       strokeDasharray="30 30"
                       fill="none"

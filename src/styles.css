@@ -70,8 +70,8 @@
   --popover: #f8fafc;
   --popover-foreground: #0b1120;
 
-  --primary: #d4a63a; /* Dourado Premium */
-  --primary-foreground: #071a3d; /* Texto marinho no botão dourado */
+  --primary: #1576D0; /* Azul Royal Premium */
+  --primary-foreground: #ffffff; /* Texto branco no botão azul */
 
   --secondary: #0e2c63; /* Navy Soft */
   --secondary-foreground: #f8fafc;
@@ -79,30 +79,30 @@
   --muted: #d9e1ec; /* Cinza Claro */
   --muted-foreground: #94a3b8; /* Cinza Médio */
 
-  --accent: #f4c95d; /* Dourado Claro */
-  --accent-foreground: #071a3d;
+  --accent: #3b82f6; /* Azul Claro Accent */
+  --accent-foreground: #ffffff;
 
   --destructive: #ef4444; /* Vermelho Despesa */
   --destructive-foreground: #f8fafc;
 
   --border: #d9e1ec; /* Cinza Claro */
   --input: #d9e1ec;
-  --ring: #d4a63a;
+  --ring: #1576D0;
 
   --chart-1: #22c55e; /* Verde Receita */
   --chart-2: #ef4444; /* Vermelho Despesa */
   --chart-3: #f59e0b; /* Ambar Pendência */
   --chart-4: #3b82f6; /* Azul Info */
-  --chart-5: #d4a63a; /* Dourado Meta */
+  --chart-5: #1576D0; /* Azul Meta */
 
   --sidebar: #071a3d;
   --sidebar-foreground: #f8fafc;
-  --sidebar-primary: #d4a63a;
-  --sidebar-primary-foreground: #071a3d;
+  --sidebar-primary: #1576D0;
+  --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #0e2c63;
   --sidebar-accent-foreground: #f8fafc;
   --sidebar-border: #0e2c63;
-  --sidebar-ring: #d4a63a;
+  --sidebar-ring: #1576D0;
 }
 
 .dark {
@@ -112,27 +112,27 @@
   --card-foreground: #f8fafc;
   --popover: #0e2c63;
   --popover-foreground: #f8fafc;
-  --primary: #d4a63a;
-  --primary-foreground: #071a3d;
+  --primary: #1576D0;
+  --primary-foreground: #ffffff;
   --secondary: #0e2c63;
   --secondary-foreground: #f8fafc;
   --muted: #0e2c63;
   --muted-foreground: #94a3b8;
-  --accent: #f4c95d;
-  --accent-foreground: #071a3d;
+  --accent: #3b82f6;
+  --accent-foreground: #ffffff;
   --destructive: #ef4444;
   --destructive-foreground: #f8fafc;
   --border: #0e2c63;
   --input: #0e2c63;
-  --ring: #d4a63a;
+  --ring: #1576D0;
   --sidebar: #071a3d;
   --sidebar-foreground: #f8fafc;
-  --sidebar-primary: #d4a63a;
-  --sidebar-primary-foreground: #071a3d;
+  --sidebar-primary: #1576D0;
+  --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #0e2c63;
   --sidebar-accent-foreground: #f8fafc;
   --sidebar-border: #0e2c63;
-  --sidebar-ring: #d4a63a;
+  --sidebar-ring: #1576D0;
 }
 
 @layer base {

@@ -71,7 +71,7 @@ function Ajustes() {
     >
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold tracking-tight text-[#0B1120] flex items-center gap-2">
-          <SlidersHorizontal className="w-6 h-6 text-[#D4A63A]" />
+          <SlidersHorizontal className="w-6 h-6 text-[#1576D0]" />
           Ajustes
         </h1>
         <p className="text-slate-500 text-sm">Gerencie sua conta e sincronização.</p>

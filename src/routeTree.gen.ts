@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TransacoesRouteImport } from './routes/transacoes'
 import { Route as RelatoriosRouteImport } from './routes/relatorios'
+import { Route as CalculadorasRouteImport } from './routes/calculadoras'
 import { Route as AjustesRouteImport } from './routes/ajustes'
 import { Route as AdicionarRouteImport } from './routes/adicionar'
 import { Route as IndexRouteImport } from './routes/index'
@@ -23,6 +24,11 @@ const TransacoesRoute = TransacoesRouteImport.update({
 const RelatoriosRoute = RelatoriosRouteImport.update({
   id: '/relatorios',
   path: '/relatorios',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CalculadorasRoute = CalculadorasRouteImport.update({
+  id: '/calculadoras',
+  path: '/calculadoras',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AjustesRoute = AjustesRouteImport.update({
@@ -45,6 +51,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/adicionar': typeof AdicionarRoute
   '/ajustes': typeof AjustesRoute
+  '/calculadoras': typeof CalculadorasRoute
   '/relatorios': typeof RelatoriosRoute
   '/transacoes': typeof TransacoesRoute
 }
@@ -52,6 +59,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/adicionar': typeof AdicionarRoute
   '/ajustes': typeof AjustesRoute
+  '/calculadoras': typeof CalculadorasRoute
   '/relatorios': typeof RelatoriosRoute
   '/transacoes': typeof TransacoesRoute
 }
@@ -60,19 +68,33 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/adicionar': typeof AdicionarRoute
   '/ajustes': typeof AjustesRoute
+  '/calculadoras': typeof CalculadorasRoute
   '/relatorios': typeof RelatoriosRoute
   '/transacoes': typeof TransacoesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/adicionar' | '/ajustes' | '/relatorios' | '/transacoes'
+  fullPaths:
+    | '/'
+    | '/adicionar'
+    | '/ajustes'
+    | '/calculadoras'
+    | '/relatorios'
+    | '/transacoes'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/adicionar' | '/ajustes' | '/relatorios' | '/transacoes'
+  to:
+    | '/'
+    | '/adicionar'
+    | '/ajustes'
+    | '/calculadoras'
+    | '/relatorios'
+    | '/transacoes'
   id:
     | '__root__'
     | '/'
     | '/adicionar'
     | '/ajustes'
+    | '/calculadoras'
     | '/relatorios'
     | '/transacoes'
   fileRoutesById: FileRoutesById
@@ -81,6 +103,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdicionarRoute: typeof AdicionarRoute
   AjustesRoute: typeof AjustesRoute
+  CalculadorasRoute: typeof CalculadorasRoute
   RelatoriosRoute: typeof RelatoriosRoute
   TransacoesRoute: typeof TransacoesRoute
 }
@@ -99,6 +122,13 @@ declare module '@tanstack/react-router' {
       path: '/relatorios'
       fullPath: '/relatorios'
       preLoaderRoute: typeof RelatoriosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/calculadoras': {
+      id: '/calculadoras'
+      path: '/calculadoras'
+      fullPath: '/calculadoras'
+      preLoaderRoute: typeof CalculadorasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/ajustes': {
@@ -129,6 +159,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdicionarRoute: AdicionarRoute,
   AjustesRoute: AjustesRoute,
+  CalculadorasRoute: CalculadorasRoute,
   RelatoriosRoute: RelatoriosRoute,
   TransacoesRoute: TransacoesRoute,
 }

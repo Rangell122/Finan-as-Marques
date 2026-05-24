@@ -247,6 +247,14 @@ function TransactionsPage() {
   };
 
   const parseResponsible = (description: string) => {
+    if (description.startsWith("DEBT_JSON:")) {
+      try {
+        const data = JSON.parse(description.substring(10));
+        return { name: "Os dois", cleanDesc: `Dívida: ${data.name}` };
+      } catch (e) {
+        return { name: "Os dois", cleanDesc: "Dívida" };
+      }
+    }
     if (description.startsWith("[Jack] ")) {
       return { name: "Jack", cleanDesc: description.replace("[Jack] ", "") };
     }
