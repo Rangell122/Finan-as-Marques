@@ -324,16 +324,18 @@ function Index() {
             return;
           }
 
-          // Importa todos os dados do JSON, mapeando status para os valores válidos do banco ('paid', 'pending')
-          const batch = importData.map((t) => ({
-            user_id: session.user.id,
-            type: t.type,
-            description: t.description,
-            amount: t.amount,
-            date: t.date,
-            category: t.category,
-            status: t.status === "Pago" ? "paid" : t.status === "Pendente" ? "pending" : "pending",
-          }));
+          // Importa todos os dados do JSON (filtrando BM Tech), mapeando status para os valores válidos do banco ('paid', 'pending')
+          const batch = importData
+            .filter((t) => !String(t.description || "").toLowerCase().includes("bm tech"))
+            .map((t) => ({
+              user_id: session.user.id,
+              type: t.type,
+              description: t.description,
+              amount: t.amount,
+              date: t.date,
+              category: t.category,
+              status: t.type === "income" ? "paid" : (t.status === "Pago" ? "paid" : "pending"),
+            }));
 
           const { error: insError } = await supabase.from("transactions").insert(batch);
           if (insError) {
@@ -563,6 +565,20 @@ function Index() {
       await fetchTransactions();
     } catch (err: any) {
       alert("Erro ao excluir dívida: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteTransaction = async (id: string) => {
+    if (!confirm("Tem certeza que deseja excluir este lançamento?")) return;
+    setLoading(true);
+    try {
+      const { error } = await supabase.from("transactions").delete().eq("id", id);
+      if (error) throw error;
+      await fetchTransactions();
+    } catch (err: any) {
+      alert("Erro ao excluir lançamento: " + err.message);
     } finally {
       setLoading(false);
     }
@@ -1135,7 +1151,7 @@ function Index() {
               </div>
             </div>
 
-            <div className="space-y-3 max-h-[280px] overflow-y-auto pr-1">
+            <div className="space-y-3 max-h-[480px] overflow-y-auto pr-1">
               {contasEmAberto.map((t) => {
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
@@ -1163,16 +1179,27 @@ function Index() {
                       <span className="font-extrabold text-sm text-slate-700">
                         {formatCurrency(t.amount)}
                       </span>
-                      <Button
-                        size="sm"
-                        onClick={() => {
-                          setPayTransaction(t);
-                          setPayAmountInput(t.amount.toString());
-                        }}
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-8 px-3 rounded-lg text-xs"
-                      >
-                        Pagar
-                      </Button>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            setPayTransaction(t);
+                            setPayAmountInput(t.amount.toString());
+                          }}
+                          className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-8 px-3 rounded-lg text-xs"
+                        >
+                          Pagar
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => handleDeleteTransaction(t.id)}
+                          className="text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg w-8 h-8"
+                          title="Excluir Lançamento"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -1318,12 +1345,23 @@ function Index() {
                       >
                         {t.type === "income" ? "+" : "-"} {formatCurrency(t.amount)}
                       </TableCell>
+                      <TableCell className="text-right py-3 pr-0 w-10">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => handleDeleteTransaction(t.id)}
+                          className="text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg w-8 h-8"
+                          title="Excluir Lançamento"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   );
                 })}
                 {filteredTransactions.length === 0 && !loading && (
                   <TableRow>
-                    <TableCell colSpan={2} className="text-center text-slate-500 py-8">
+                    <TableCell colSpan={3} className="text-center text-slate-500 py-8">
                       Nenhuma transação cadastrada para este mês.
                     </TableCell>
                   </TableRow>
