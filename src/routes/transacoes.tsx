@@ -468,7 +468,8 @@ function TransactionsPage() {
         </div>
       ) : (
         <>
-          <Card className="hidden md:block border border-border/80 shadow-sm overflow-hidden bg-white rounded-2xl">
+          <Card className="hidden md:block border border-border/80 shadow-sm overflow-hidden bg-white rounded-2xl w-full">
+            <div className="overflow-x-auto w-full">
             <Table>
               <TableHeader className="bg-slate-50">
                 <TableRow className="border-b border-border">
@@ -576,8 +577,8 @@ function TransactionsPage() {
                     </TableCell>
                   </TableRow>
                 )}
-              </TableBody>
-            </Table>
+              </Table>
+            </div>
           </Card>
 
           {/* PLANILHA RESPONSIVA CELULAR */}
@@ -586,8 +587,8 @@ function TransactionsPage() {
               const overdue = isOverdue(t.date, t.status);
               const { name: respName, cleanDesc } = parseResponsible(t.description);
               return (
-                <Card key={t.id} className="border border-border/40 shadow-sm p-4 bg-white rounded-xl">
-                  <div className="flex justify-between items-start mb-2">
+                <Card key={t.id} className="border border-border/40 shadow-sm p-4 bg-white rounded-xl break-words whitespace-normal max-w-full overflow-hidden">
+                  <div className="flex justify-between items-start mb-2 gap-2">
                     <div className="space-y-1">
                       <div className="font-bold text-[#0B1120] text-base leading-tight">{cleanDesc}</div>
                       <div className="text-xs text-slate-500 flex flex-wrap gap-2 items-center pt-1">

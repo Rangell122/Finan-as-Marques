@@ -15,6 +15,7 @@ import { useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { Login } from "@/components/Login";
 import { Logo } from "@/components/Logo";
+import importData from "@/data/import.json";
 
 import appCss from "../styles.css?url";
 
@@ -127,10 +128,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "author", content: "Finanças Marques" },
     ],
     links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
+      { rel: "stylesheet", href: appCss },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "icon", href: "/logo.svg", type: "image/svg+xml" },
+      { rel: "apple-touch-icon", href: "/logo.svg" },
     ],
   }),
   shellComponent: RootShell,
@@ -182,6 +183,30 @@ function RootComponent() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
+      
+      // Auto-import transactions wiping dummy data automatically once
+      if (session?.user) {
+        if (!localStorage.getItem("data_imported_v2")) {
+          console.log("Wiping dummy data and auto-importing real data...");
+          supabase.from("transactions").delete().eq("user_id", session.user.id).then(async () => {
+            if (importData && importData.length > 0) {
+              const batch = importData.map(t => ({
+                user_id: session.user.id,
+                type: t.type,
+                description: t.description,
+                amount: t.amount,
+                date: t.date,
+                category: t.category,
+                status: t.status
+              }));
+              await supabase.from("transactions").insert(batch);
+              localStorage.setItem("data_imported_v2", "true");
+              alert("Dados falsos removidos! Seus 212 lançamentos reais foram importados automaticamente.");
+              window.location.reload();
+            }
+          });
+        }
+      }
     });
 
     const {
@@ -413,16 +438,16 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="flex min-h-screen bg-background">
+      <div className="flex h-[100dvh] w-screen overflow-hidden bg-background">
         {!isMobile && (
           <aside className="w-64 border-r border-sidebar-border bg-sidebar flex-shrink-0">
             <SidebarContent />
           </aside>
         )}
         
-        <main className="flex-1 flex flex-col min-h-0 relative">
+        <main className="flex-1 flex flex-col min-h-0 w-full relative overflow-hidden">
           {isMobile && (
-            <header className="h-16 border-b border-sidebar-border bg-sidebar flex items-center justify-between px-4 flex-shrink-0 z-50 relative text-sidebar-foreground">
+            <header className="h-16 border-b border-sidebar-border bg-sidebar flex items-center justify-between px-4 flex-shrink-0 z-50 relative text-sidebar-foreground w-full">
               <div className="flex items-center gap-2">
                 <Logo className="w-7 h-7 drop-shadow-[0_0_6px_rgba(212,166,58,0.35)]" />
                 <span className="font-bold text-lg text-sidebar-foreground">Finanças Marques</span>
@@ -474,9 +499,9 @@ function RootComponent() {
                     <Link to="/" onClick={() => setMenuOpen(false)} className="block py-2 text-sm text-slate-300 hover:text-white">
                       Análise de Gastos
                     </Link>
-                    <Link to="/" onClick={() => setMenuOpen(false)} className="block py-2 text-sm text-slate-300 hover:text-white">
-                      Exportar PDF
-                    </Link>
+                    <button onClick={() => { setMenuOpen(false); setTimeout(() => window.print(), 500); }} className="block w-full text-left py-2 text-sm text-slate-300 hover:text-white">
+                      Exportar PDF / Imprimir
+                    </button>
                   </div>
                 )}
               </div>
@@ -503,6 +528,51 @@ function RootComponent() {
                     </Link>
                     <button 
                       onClick={async () => {
+                        if (confirm("Deseja importar as 212 transações da planilha Google Sheets? Essa ação pode demorar alguns segundos.")) {
+                          const { data: { user } } = await supabase.auth.getUser();
+                          if (user) {
+                            alert("Iniciando importação! Por favor, não feche a página.");
+                            let successCount = 0;
+                            // Batch processing to avoid rate limits
+                            for (let i = 0; i < importData.length; i++) {
+                              const t = importData[i];
+                              const { error } = await supabase.from("transactions").insert({
+                                user_id: user.id,
+                                type: t.type,
+                                description: t.description,
+                                amount: t.amount,
+                                date: t.date,
+                                category: t.category,
+                                status: t.status
+                              });
+                              if (!error) successCount++;
+                            }
+                            alert(`Importação concluída! ${successCount} lançamentos inseridos com sucesso.`);
+                            window.location.reload();
+                          }
+                        }
+                      }}
+                      className="w-full text-left py-2 text-sm text-emerald-400 font-semibold hover:text-emerald-300 mt-1"
+                    >
+                      Importar Planilha Google Sheets
+                    </button>
+                    <button 
+                      onClick={async () => {
+                        if (confirm("Tem certeza que deseja apagar TODOS os dados e zerar a planilha? Essa ação não pode ser desfeita.")) {
+                          const { data: { user } } = await supabase.auth.getUser();
+                          if (user) {
+                            await supabase.from("transactions").delete().eq("user_id", user.id);
+                            alert("Plataforma zerada com sucesso!");
+                            window.location.reload();
+                          }
+                        }
+                      }}
+                      className="w-full text-left py-2 text-sm text-amber-500 font-semibold hover:text-amber-400 mt-1"
+                    >
+                      Zerar Planilha (Apagar Dados)
+                    </button>
+                    <button 
+                      onClick={async () => {
                         await supabase.auth.signOut();
                         setMenuOpen(false);
                       }} 
@@ -516,28 +586,28 @@ function RootComponent() {
             </div>
           )}
 
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden w-full scrollbar-none pb-20 md:pb-0">
             <Outlet />
           </div>
           
           {isMobile && (
-            <nav className="h-16 border-t bg-white flex items-center justify-around flex-shrink-0 z-10 relative">
-              <Link to="/" className="flex flex-col items-center gap-1 text-muted-foreground" activeProps={{ className: "text-primary" }}>
+            <nav className="h-16 border-t bg-white flex items-center justify-around flex-shrink-0 z-50 absolute bottom-0 w-full shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
+              <Link to="/" className="flex flex-col items-center gap-1 text-slate-400" activeProps={{ className: "text-primary" }}>
                 <LayoutGrid className="w-5 h-5" />
                 <span className="text-[10px]">Início</span>
               </Link>
-              <Link to="/transacoes" className="flex flex-col items-center gap-1 text-muted-foreground" activeProps={{ className: "text-primary" }}>
+              <Link to="/transacoes" className="flex flex-col items-center gap-1 text-slate-400" activeProps={{ className: "text-primary" }}>
                 <Wallet className="w-5 h-5" />
                 <span className="text-[10px]">Transações</span>
               </Link>
-              <Link to="/transacoes" className="rounded-full w-10 h-10 -mt-8 shadow-lg bg-primary hover:bg-primary/95 flex items-center justify-center text-primary-foreground transition-all duration-200">
+              <Link to="/transacoes" className="rounded-full w-12 h-12 -mt-6 shadow-lg bg-primary hover:bg-primary/95 flex items-center justify-center text-primary-foreground transition-all duration-200 border-4 border-background">
                 <Plus className="w-6 h-6" />
               </Link>
-              <Link to="/" className="flex flex-col items-center gap-1 text-muted-foreground">
+              <button onClick={() => { setMenuOpen(true); setReportsExpanded(true); }} className="flex flex-col items-center gap-1 text-slate-400 hover:text-primary">
                 <LineChart className="w-5 h-5" />
-                <span className="text-[10px]">Gráficos</span>
-              </Link>
-              <button onClick={() => { setMenuOpen(!menuOpen); setSettingsExpanded(true); }} className="flex flex-col items-center gap-1 text-muted-foreground">
+                <span className="text-[10px]">Relatórios</span>
+              </button>
+              <button onClick={() => { setMenuOpen(true); setSettingsExpanded(true); }} className="flex flex-col items-center gap-1 text-slate-400 hover:text-primary">
                 <SlidersHorizontal className="w-5 h-5" />
                 <span className="text-[10px]">Ajustes</span>
               </button>

@@ -1,0 +1,1698 @@
+[
+  {
+    "description": "Salário Jack-Studio G",
+    "amount": 570,
+    "date": "2026-02-10",
+    "category": "Renda - Salário",
+    "type": "income",
+    "status": "Pago"
+  },
+  {
+    "description": "Salário Jack-Studio G",
+    "amount": 1000,
+    "date": "2026-03-10",
+    "category": "Renda - Salário",
+    "type": "income",
+    "status": "Pago"
+  },
+  {
+    "description": "Salário Jack-Studio G",
+    "amount": 210,
+    "date": "2026-04-10",
+    "category": "Renda - Salário",
+    "type": "income",
+    "status": "Pago"
+  },
+  {
+    "description": "Salário Jack-DF Móveis",
+    "amount": 1626,
+    "date": "2026-01-10",
+    "category": "Renda - Salário",
+    "type": "income",
+    "status": "Pago"
+  },
+  {
+    "description": "Salário Jack-DF Móveis",
+    "amount": 1736,
+    "date": "2026-02-10",
+    "category": "Renda - Salário",
+    "type": "income",
+    "status": "Pago"
+  },
+  {
+    "description": "Salário Jack-DF Móveis",
+    "amount": 1186,
+    "date": "2026-03-10",
+    "category": "Renda - Salário",
+    "type": "income",
+    "status": "Pago"
+  },
+  {
+    "description": "Salário Jack-DF Móveis",
+    "amount": 1186,
+    "date": "2026-04-10",
+    "category": "Renda - Salário",
+    "type": "income",
+    "status": "Pago"
+  },
+  {
+    "description": "Salário Jack-DF Móveis",
+    "amount": 1736,
+    "date": "2026-05-10",
+    "category": "Renda - Salário",
+    "type": "income",
+    "status": "Pendente"
+  },
+  {
+    "description": "Salário Jack-DF Móveis",
+    "amount": 1236,
+    "date": "2026-06-10",
+    "category": "Renda - Salário",
+    "type": "income",
+    "status": "Pendente"
+  },
+  {
+    "description": "Salário Jack-DF Móveis",
+    "amount": 1236,
+    "date": "2026-07-10",
+    "category": "Renda - Salário",
+    "type": "income",
+    "status": "Pendente"
+  },
+  {
+    "description": "Salário Jack-DF Móveis",
+    "amount": 1236,
+    "date": "2026-08-10",
+    "category": "Renda - Salário",
+    "type": "income",
+    "status": "Pendente"
+  },
+  {
+    "description": "Comissão DF",
+    "amount": 4182.58,
+    "date": "2026-02-10",
+    "category": "Renda - Freelance",
+    "type": "income",
+    "status": "Pago"
+  },
+  {
+    "description": "Comissão DF",
+    "amount": 120,
+    "date": "2026-03-10",
+    "category": "Renda - Freelance",
+    "type": "income",
+    "status": "Pago"
+  },
+  {
+    "description": "Comissão DF",
+    "amount": 1213,
+    "date": "2026-04-10",
+    "category": "Renda - Freelance",
+    "type": "income",
+    "status": "Pago"
+  },
+  {
+    "description": "Comissão DF",
+    "amount": 393.75,
+    "date": "2026-05-10",
+    "category": "Renda - Freelance",
+    "type": "income",
+    "status": "Pendente"
+  },
+  {
+    "description": "Jack-outros serviços",
+    "amount": 90.92,
+    "date": "2026-01-10",
+    "category": "Renda - Outros",
+    "type": "income",
+    "status": "Pago"
+  },
+  {
+    "description": "Jack-outros serviços",
+    "amount": 330.42,
+    "date": "2026-02-10",
+    "category": "Renda - Outros",
+    "type": "income",
+    "status": "Pago"
+  },
+  {
+    "description": "Salário Rangel",
+    "amount": 640,
+    "date": "2026-01-10",
+    "category": "Renda - Salário",
+    "type": "income",
+    "status": "Pago"
+  },
+  {
+    "description": "Salário Rangel",
+    "amount": 1550,
+    "date": "2026-02-10",
+    "category": "Renda - Salário",
+    "type": "income",
+    "status": "Pago"
+  },
+  {
+    "description": "Salário Rangel",
+    "amount": 2675,
+    "date": "2026-03-10",
+    "category": "Renda - Salário",
+    "type": "income",
+    "status": "Pago"
+  },
+  {
+    "description": "Salário Rangel",
+    "amount": 6310,
+    "date": "2026-04-10",
+    "category": "Renda - Salário",
+    "type": "income",
+    "status": "Pago"
+  },
+  {
+    "description": "Salário Rangel",
+    "amount": 1610,
+    "date": "2026-05-10",
+    "category": "Renda - Salário",
+    "type": "income",
+    "status": "Pendente"
+  },
+  {
+    "description": "Emprestimo",
+    "amount": 1100,
+    "date": "2026-02-10",
+    "category": "Renda - Outros",
+    "type": "income",
+    "status": "Pago"
+  },
+  {
+    "description": "Emprestimo",
+    "amount": 1500,
+    "date": "2026-05-10",
+    "category": "Renda - Outros",
+    "type": "income",
+    "status": "Pendente"
+  },
+  {
+    "description": " Limite cartão parcelado",
+    "amount": 4688,
+    "date": "2026-02-10",
+    "category": "Renda - Outros",
+    "type": "income",
+    "status": "Pago"
+  },
+  {
+    "description": " Limite cartão parcelado",
+    "amount": 7979.38,
+    "date": "2026-04-10",
+    "category": "Renda - Outros",
+    "type": "income",
+    "status": "Pago"
+  },
+  {
+    "description": " Limite cartão parcelado",
+    "amount": 2447,
+    "date": "2026-05-10",
+    "category": "Renda - Outros",
+    "type": "income",
+    "status": "Pendente"
+  },
+  {
+    "description": "outros dinheiro",
+    "amount": 340.91,
+    "date": "2026-01-10",
+    "category": "Renda - Outros",
+    "type": "income",
+    "status": "Pago"
+  },
+  {
+    "description": "outros dinheiro",
+    "amount": 498.3,
+    "date": "2026-02-10",
+    "category": "Renda - Outros",
+    "type": "income",
+    "status": "Pago"
+  },
+  {
+    "description": "outros dinheiro",
+    "amount": 260,
+    "date": "2026-03-10",
+    "category": "Renda - Outros",
+    "type": "income",
+    "status": "Pago"
+  },
+  {
+    "description": "outros dinheiro",
+    "amount": 180,
+    "date": "2026-04-10",
+    "category": "Renda - Outros",
+    "type": "income",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Aluguel",
+    "amount": 700,
+    "date": "2026-01-10",
+    "category": "Casa - Outros",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Aluguel",
+    "amount": 700,
+    "date": "2026-02-10",
+    "category": "Casa - Outros",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Aluguel",
+    "amount": 700,
+    "date": "2026-03-10",
+    "category": "Casa - Outros",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Aluguel",
+    "amount": 700,
+    "date": "2026-04-10",
+    "category": "Casa - Outros",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Aluguel",
+    "amount": 700,
+    "date": "2026-05-10",
+    "category": "Casa - Outros",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Aluguel",
+    "amount": 700,
+    "date": "2026-06-10",
+    "category": "Casa - Outros",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Aluguel",
+    "amount": 700,
+    "date": "2026-07-10",
+    "category": "Casa - Outros",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Aluguel",
+    "amount": 700,
+    "date": "2026-08-10",
+    "category": "Casa - Outros",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Aluguel",
+    "amount": 700,
+    "date": "2026-09-10",
+    "category": "Casa - Outros",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Aluguel",
+    "amount": 700,
+    "date": "2026-10-10",
+    "category": "Casa - Outros",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Aluguel",
+    "amount": 700,
+    "date": "2026-11-10",
+    "category": "Casa - Outros",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Aluguel",
+    "amount": 700,
+    "date": "2026-12-10",
+    "category": "Casa - Outros",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Luz",
+    "amount": 494.98,
+    "date": "2026-02-10",
+    "category": "Casa - Luz",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Luz",
+    "amount": 504.17,
+    "date": "2026-03-10",
+    "category": "Casa - Luz",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Luz",
+    "amount": 417.32,
+    "date": "2026-04-10",
+    "category": "Casa - Luz",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Luz",
+    "amount": 818.03,
+    "date": "2026-05-10",
+    "category": "Casa - Luz",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Luz",
+    "amount": 497.59,
+    "date": "2026-06-10",
+    "category": "Casa - Luz",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Água",
+    "amount": 80,
+    "date": "2026-01-10",
+    "category": "Casa - Água",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Água",
+    "amount": 161.47,
+    "date": "2026-03-10",
+    "category": "Casa - Água",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Água",
+    "amount": 159.29,
+    "date": "2026-04-10",
+    "category": "Casa - Água",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Água",
+    "amount": 83.2,
+    "date": "2026-05-10",
+    "category": "Casa - Água",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Água",
+    "amount": 83.66,
+    "date": "2026-06-10",
+    "category": "Casa - Água",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Internet",
+    "amount": 153.66,
+    "date": "2026-01-10",
+    "category": "Casa - Internet",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Internet",
+    "amount": 153.61,
+    "date": "2026-02-10",
+    "category": "Casa - Internet",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Internet",
+    "amount": 153.61,
+    "date": "2026-03-10",
+    "category": "Casa - Internet",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Internet",
+    "amount": 149.9,
+    "date": "2026-04-10",
+    "category": "Casa - Internet",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Internet",
+    "amount": 153.25,
+    "date": "2026-05-10",
+    "category": "Casa - Internet",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Internet",
+    "amount": 153,
+    "date": "2026-06-10",
+    "category": "Casa - Internet",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Mercado",
+    "amount": 367.36,
+    "date": "2026-03-10",
+    "category": "Casa - Mercado / Compras",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Mercado",
+    "amount": 445.14,
+    "date": "2026-04-10",
+    "category": "Casa - Mercado / Compras",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Mercado",
+    "amount": 130.45,
+    "date": "2026-05-10",
+    "category": "Casa - Mercado / Compras",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Posto",
+    "amount": 90,
+    "date": "2026-03-10",
+    "category": "Moto - Gasolina",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Posto",
+    "amount": 150,
+    "date": "2026-04-10",
+    "category": "Moto - Gasolina",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Posto",
+    "amount": 50,
+    "date": "2026-05-10",
+    "category": "Moto - Gasolina",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Rangel] Plano celular Rangel",
+    "amount": 140,
+    "date": "2026-01-10",
+    "category": "Casa - Outros",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Rangel] Plano celular Rangel",
+    "amount": 280,
+    "date": "2026-04-10",
+    "category": "Casa - Outros",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Rangel] Plano celular Rangel",
+    "amount": 280,
+    "date": "2026-06-10",
+    "category": "Casa - Outros",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Jack] Plano celular jack",
+    "amount": 45,
+    "date": "2026-01-10",
+    "category": "Casa - Outros",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Jack] Plano celular jack",
+    "amount": 88.7,
+    "date": "2026-03-10",
+    "category": "Casa - Outros",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Jack] Plano celular jack",
+    "amount": 88.7,
+    "date": "2026-06-10",
+    "category": "Casa - Outros",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Açougue",
+    "amount": 204.4,
+    "date": "2026-03-10",
+    "category": "Casa - Mercado / Compras",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Açougue",
+    "amount": 304.29,
+    "date": "2026-04-10",
+    "category": "Casa - Mercado / Compras",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Açougue",
+    "amount": 97.31,
+    "date": "2026-05-10",
+    "category": "Casa - Mercado / Compras",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Farmacia",
+    "amount": 34.1,
+    "date": "2026-05-10",
+    "category": "Casa - Outros",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Academia",
+    "amount": 200,
+    "date": "2026-04-10",
+    "category": "Casa - Outros",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Academia",
+    "amount": 200,
+    "date": "2026-05-10",
+    "category": "Casa - Outros",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Academia",
+    "amount": 200,
+    "date": "2026-06-10",
+    "category": "Casa - Outros",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] DAS MEI",
+    "amount": 80.9,
+    "date": "2026-01-10",
+    "category": "Casa - Outros",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] DAS MEI",
+    "amount": 90,
+    "date": "2026-03-10",
+    "category": "Casa - Outros",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] DAS MEI",
+    "amount": 92.02,
+    "date": "2026-04-10",
+    "category": "Casa - Outros",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] DAS MEI",
+    "amount": 91.45,
+    "date": "2026-05-10",
+    "category": "Casa - Outros",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] DAS MEI",
+    "amount": 172.1,
+    "date": "2026-06-10",
+    "category": "Casa - Outros",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] IPVA/licenciamento/Multa",
+    "amount": 306.86,
+    "date": "2026-04-10",
+    "category": "Casa - Outros",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Cartão de crédito-Sicredi",
+    "amount": 3150,
+    "date": "2026-01-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Cartão de crédito-Sicredi",
+    "amount": 6462,
+    "date": "2026-02-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Cartão de crédito-Sicredi",
+    "amount": 5814.32,
+    "date": "2026-04-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Cartão de crédito-Sicredi",
+    "amount": 2885.65,
+    "date": "2026-05-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Cartão de crédito-Sicredi",
+    "amount": 3241.45,
+    "date": "2026-06-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Cartão de crédito-Sicredi",
+    "amount": 1631.76,
+    "date": "2026-07-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Cartão de crédito-Sicredi",
+    "amount": 1557.31,
+    "date": "2026-08-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Cartão de crédito-Sicredi",
+    "amount": 1557.31,
+    "date": "2026-09-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Cartão de crédito-Sicredi",
+    "amount": 1260.71,
+    "date": "2026-10-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Cartão de crédito-Sicredi",
+    "amount": 1260.71,
+    "date": "2026-11-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Cartão de crédito-Sicredi",
+    "amount": 1260.71,
+    "date": "2026-12-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Cartão de créditoMercado pago",
+    "amount": 494,
+    "date": "2026-01-10",
+    "category": "Casa - Mercado / Compras",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Cartão de créditoMercado pago",
+    "amount": 313,
+    "date": "2026-02-10",
+    "category": "Casa - Mercado / Compras",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Cartão de créditoMercado pago",
+    "amount": 1705,
+    "date": "2026-05-10",
+    "category": "Casa - Mercado / Compras",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Cartão de créditoMercado pago",
+    "amount": 1705,
+    "date": "2026-06-10",
+    "category": "Casa - Mercado / Compras",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Recarga pay-emprestimo",
+    "amount": 450,
+    "date": "2026-01-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Recarga pay-emprestimo",
+    "amount": 449.96,
+    "date": "2026-02-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Recarga pay-emprestimo",
+    "amount": 489.93,
+    "date": "2026-03-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Havan",
+    "amount": 565.8,
+    "date": "2026-01-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Havan",
+    "amount": 655,
+    "date": "2026-02-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Havan",
+    "amount": 581,
+    "date": "2026-03-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Havan",
+    "amount": 460,
+    "date": "2026-04-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Havan",
+    "amount": 3070,
+    "date": "2026-05-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Havan",
+    "amount": 280.91,
+    "date": "2026-06-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Havan",
+    "amount": 114.97,
+    "date": "2026-07-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Havan",
+    "amount": 114.97,
+    "date": "2026-08-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Havan",
+    "amount": 114.97,
+    "date": "2026-09-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Havan",
+    "amount": 114.97,
+    "date": "2026-10-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Havan",
+    "amount": 49.98,
+    "date": "2026-11-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Cartão de crédito-nubank",
+    "amount": 197.87,
+    "date": "2026-01-10",
+    "category": "Cartão - Nubank",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Cartão de crédito-nubank",
+    "amount": 124.89,
+    "date": "2026-02-10",
+    "category": "Cartão - Nubank",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Cartão de crédito-nubank",
+    "amount": 208.83,
+    "date": "2026-03-10",
+    "category": "Cartão - Nubank",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Cartão de crédito-nubank",
+    "amount": 122.69,
+    "date": "2026-05-10",
+    "category": "Cartão - Nubank",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Cartão de crédito-nubank",
+    "amount": 127,
+    "date": "2026-06-10",
+    "category": "Cartão - Nubank",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Empréstimo Sicredi 1",
+    "amount": 724.32,
+    "date": "2026-01-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Empréstimo Sicredi 1",
+    "amount": 724.32,
+    "date": "2026-02-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Empréstimo Sicredi 1",
+    "amount": 1502,
+    "date": "2026-04-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Empréstimo Sicredi 1",
+    "amount": 724.32,
+    "date": "2026-05-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Empréstimo Sicredi 1",
+    "amount": 724.32,
+    "date": "2026-06-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Empréstimo Sicredi 1",
+    "amount": 724.32,
+    "date": "2026-07-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Empréstimo Sicredi 1",
+    "amount": 724.32,
+    "date": "2026-08-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Empréstimo Sicredi 1",
+    "amount": 724.32,
+    "date": "2026-09-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Empréstimo Sicredi 1",
+    "amount": 724.32,
+    "date": "2026-10-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Empréstimo Sicredi 2-blindagem",
+    "amount": 210.21,
+    "date": "2026-02-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Empréstimo Sicredi 2-blindagem",
+    "amount": 439.91,
+    "date": "2026-04-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Empréstimo Sicredi 2-blindagem",
+    "amount": 210.21,
+    "date": "2026-05-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Empréstimo Sicredi 2-blindagem",
+    "amount": 210.21,
+    "date": "2026-06-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Empréstimo Sicredi 2-blindagem",
+    "amount": 210.21,
+    "date": "2026-07-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Empréstimo Sicredi 2-blindagem",
+    "amount": 210.21,
+    "date": "2026-08-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Empréstimo Sicredi 2-blindagem",
+    "amount": 210.21,
+    "date": "2026-09-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Empréstimo Sicredi 2-blindagem",
+    "amount": 210.21,
+    "date": "2026-10-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Empréstimo Sicredi 2-blindagem",
+    "amount": 210.21,
+    "date": "2026-11-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Mercado pago emprestimo",
+    "amount": 352.88,
+    "date": "2026-01-10",
+    "category": "Casa - Mercado / Compras",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Mercado pago emprestimo",
+    "amount": 352.88,
+    "date": "2026-02-10",
+    "category": "Casa - Mercado / Compras",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Mercado pago emprestimo",
+    "amount": 700,
+    "date": "2026-05-10",
+    "category": "Casa - Mercado / Compras",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Mercado pago emprestimo",
+    "amount": 700,
+    "date": "2026-06-10",
+    "category": "Casa - Mercado / Compras",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Mãe-Promob",
+    "amount": 206.64,
+    "date": "2026-01-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Mãe-Promob",
+    "amount": 206.64,
+    "date": "2026-02-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Mãe-Promob",
+    "amount": 206.64,
+    "date": "2026-03-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Mãe-Promob",
+    "amount": 206.64,
+    "date": "2026-04-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Mãe-Promob",
+    "amount": 206.64,
+    "date": "2026-05-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Mãe-Promob",
+    "amount": 206.64,
+    "date": "2026-06-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Mãe-Promob",
+    "amount": 206.64,
+    "date": "2026-07-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Mãe-Promob",
+    "amount": 206.64,
+    "date": "2026-08-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Mãe-Promob",
+    "amount": 206.64,
+    "date": "2026-09-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Mãe-Farmácia",
+    "amount": 26.66,
+    "date": "2026-01-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Mãe-Farmácia",
+    "amount": 26.66,
+    "date": "2026-02-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Mãe-Farmácia",
+    "amount": 26.66,
+    "date": "2026-03-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Mãe-Farmácia",
+    "amount": 50.39,
+    "date": "2026-05-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Mãe-Farmácia",
+    "amount": 50.39,
+    "date": "2026-06-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Mãe-Farmácia",
+    "amount": 50.39,
+    "date": "2026-07-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Mãe-cartão de crédito",
+    "amount": 1064,
+    "date": "2026-01-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Mãe-cartão de crédito",
+    "amount": 1536.7,
+    "date": "2026-02-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Mãe-cartão de crédito",
+    "amount": 1778,
+    "date": "2026-03-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Mãe-cartão de crédito",
+    "amount": 461.97,
+    "date": "2026-04-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Mãe-cartão de crédito",
+    "amount": 1438,
+    "date": "2026-05-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Mãe-cartão de crédito",
+    "amount": 805.5,
+    "date": "2026-06-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Mãe-cartão de crédito",
+    "amount": 600.36,
+    "date": "2026-07-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Mãe-cartão de crédito",
+    "amount": 600.36,
+    "date": "2026-08-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Mãe-cartão de crédito",
+    "amount": 600.36,
+    "date": "2026-09-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Mãe-cartão de crédito",
+    "amount": 600.36,
+    "date": "2026-10-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Mãe-cartão de crédito",
+    "amount": 600.36,
+    "date": "2026-11-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Mãe-cartão de crédito",
+    "amount": 600.36,
+    "date": "2026-12-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Shoppe",
+    "amount": 88,
+    "date": "2026-04-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Shoppe",
+    "amount": 108.9,
+    "date": "2026-06-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Shoppe",
+    "amount": 108.9,
+    "date": "2026-07-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Shoppe",
+    "amount": 108.9,
+    "date": "2026-08-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] natura",
+    "amount": 154.84,
+    "date": "2026-02-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] natura",
+    "amount": 89.12,
+    "date": "2026-04-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] natura",
+    "amount": 221.47,
+    "date": "2026-06-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] natura",
+    "amount": 221.47,
+    "date": "2026-07-10",
+    "category": "Outros Gastos",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] outras contas",
+    "amount": 79.67,
+    "date": "2026-01-10",
+    "category": "Cartão - Outros",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] outras contas",
+    "amount": 251.69,
+    "date": "2026-02-10",
+    "category": "Cartão - Outros",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] outras contas",
+    "amount": 297.5,
+    "date": "2026-03-10",
+    "category": "Cartão - Outros",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] outras contas",
+    "amount": 754.25,
+    "date": "2026-04-10",
+    "category": "Cartão - Outros",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] outras contas",
+    "amount": 83,
+    "date": "2026-05-10",
+    "category": "Cartão - Outros",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Rangel] pix rangel",
+    "amount": 526.77,
+    "date": "2026-01-10",
+    "category": "Cartão - Outros",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Rangel] pix rangel",
+    "amount": 449,
+    "date": "2026-02-10",
+    "category": "Cartão - Outros",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Rangel] pix rangel",
+    "amount": 1221.41,
+    "date": "2026-03-10",
+    "category": "Cartão - Outros",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Rangel] pix rangel",
+    "amount": 2211,
+    "date": "2026-04-10",
+    "category": "Cartão - Outros",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Rangel] pix rangel",
+    "amount": 486,
+    "date": "2026-05-10",
+    "category": "Cartão - Outros",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Juros",
+    "amount": 163,
+    "date": "2026-04-10",
+    "category": "Cartão - Outros",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Juros",
+    "amount": 85,
+    "date": "2026-05-10",
+    "category": "Cartão - Outros",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Bm tech",
+    "amount": 48,
+    "date": "2026-04-10",
+    "category": "Cartão - Outros",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Bm tech",
+    "amount": 280,
+    "date": "2026-05-10",
+    "category": "Cartão - Outros",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] saidas/Delivery",
+    "amount": 74.35,
+    "date": "2026-01-10",
+    "category": "Cartão - Outros",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] saidas/Delivery",
+    "amount": 652.5,
+    "date": "2026-03-10",
+    "category": "Cartão - Outros",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] saidas/Delivery",
+    "amount": 155.93,
+    "date": "2026-04-10",
+    "category": "Cartão - Outros",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] saidas/Delivery",
+    "amount": 370.8,
+    "date": "2026-05-10",
+    "category": "Cartão - Outros",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Salão/Barbearia",
+    "amount": 280,
+    "date": "2026-02-10",
+    "category": "Cartão - Outros",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Salão/Barbearia",
+    "amount": 40,
+    "date": "2026-04-10",
+    "category": "Cartão - Outros",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Salão/Barbearia",
+    "amount": 30,
+    "date": "2026-05-10",
+    "category": "Cartão - Outros",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Padaria",
+    "amount": 47,
+    "date": "2026-02-10",
+    "category": "Casa - Mercado / Compras",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Padaria",
+    "amount": 73,
+    "date": "2026-03-10",
+    "category": "Casa - Mercado / Compras",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Padaria",
+    "amount": 107.43,
+    "date": "2026-04-10",
+    "category": "Casa - Mercado / Compras",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Padaria",
+    "amount": 97.12,
+    "date": "2026-05-10",
+    "category": "Casa - Mercado / Compras",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Sorteio",
+    "amount": 7.98,
+    "date": "2026-01-10",
+    "category": "Cartão - Outros",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Sorteio",
+    "amount": 7.98,
+    "date": "2026-02-10",
+    "category": "Cartão - Outros",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Sorteio",
+    "amount": 23.94,
+    "date": "2026-03-10",
+    "category": "Cartão - Outros",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Sorteio",
+    "amount": 11.97,
+    "date": "2026-04-10",
+    "category": "Cartão - Outros",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Sorteio",
+    "amount": 13.75,
+    "date": "2026-05-10",
+    "category": "Cartão - Outros",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Divida-Empréstimo Facio",
+    "amount": 186.9,
+    "date": "2026-01-10",
+    "category": "Cartão - Outros",
+    "type": "expense",
+    "status": "Pago"
+  },
+  {
+    "description": "[Os dois] Divida-Empréstimo Facio",
+    "amount": 199.81,
+    "date": "2026-05-10",
+    "category": "Cartão - Outros",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Divida-Empréstimo 99play",
+    "amount": 7226.9,
+    "date": "2026-05-10",
+    "category": "Cartão - Outros",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Divida-Empréstimo Zippy",
+    "amount": 1389,
+    "date": "2026-05-10",
+    "category": "Cartão - Outros",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Divida-Cartão de crédito-Sicoob",
+    "amount": 1253,
+    "date": "2026-05-10",
+    "category": "Cartão - Outros",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] Divida-Cartão de Crédito-Renner",
+    "amount": 4700,
+    "date": "2026-05-10",
+    "category": "Cartão - Outros",
+    "type": "expense",
+    "status": "Pendente"
+  },
+  {
+    "description": "[Os dois] cheque especial",
+    "amount": 1200,
+    "date": "2026-05-10",
+    "category": "Cartão - Outros",
+    "type": "expense",
+    "status": "Pendente"
+  }
+]

@@ -377,8 +377,9 @@ function Index() {
           </div>
         </Card>
 
-        <Card className="lg:col-span-3 p-6 border border-border/80 shadow-sm bg-white rounded-2xl">
+        <Card className="lg:col-span-3 p-6 border border-border/80 shadow-sm bg-white rounded-2xl w-full overflow-hidden">
           <h2 className="text-lg font-bold mb-6 text-[#0B1120]">Últimos Lançamentos</h2>
+          <div className="overflow-x-auto w-full">
           <Table>
             <TableBody>
               {transactions.slice(0, 5).map((t) => {
@@ -417,6 +418,7 @@ function Index() {
               )}
             </TableBody>
           </Table>
+          </div>
         </Card>
       </div>
     </motion.div>
