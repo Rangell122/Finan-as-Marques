@@ -20,7 +20,7 @@ function Adicionar() {
         <div className="mx-auto w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center">
           <Plus className="w-8 h-8" />
         </div>
-        <h1 className="text-2xl font-bold tracking-tight text-[#0B1120]">Adicionar Lançamento</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-white">Adicionar Lançamento</h1>
         <p className="text-slate-500 text-sm max-w-xs mx-auto">
           Registre uma nova entrada ou saída no seu caixa.
         </p>

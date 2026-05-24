@@ -533,14 +533,14 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <div className="flex h-[100dvh] w-screen overflow-hidden bg-background">
         {!isMobile && (
-          <aside className="w-64 border-r border-sidebar-border bg-sidebar flex-shrink-0">
+          <aside className="w-64 border-r border-sidebar-border bg-sidebar flex-shrink-0 print:hidden">
             <SidebarContent />
           </aside>
         )}
 
         <main className="flex-1 flex flex-col min-h-0 w-full relative overflow-hidden">
           {isMobile && (
-            <header className="h-16 border-b border-sidebar-border bg-sidebar flex items-center justify-between px-4 flex-shrink-0 z-50 relative text-sidebar-foreground w-full">
+            <header className="h-16 border-b border-sidebar-border bg-sidebar flex items-center justify-between px-4 flex-shrink-0 z-50 relative text-sidebar-foreground w-full print:hidden">
               <div className="flex items-center gap-2">
                 <Logo className="w-7 h-7 drop-shadow-[0_0_6px_rgba(21,118,208,0.35)]" />
                 <span className="font-bold text-lg text-sidebar-foreground">Finanças Marques</span>
@@ -756,7 +756,7 @@ function RootComponent() {
           </div>
 
           {isMobile && (
-            <nav className="h-16 border-t bg-white flex items-center justify-around flex-shrink-0 z-50 absolute bottom-0 w-full shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
+            <nav className="h-16 border-t bg-white flex items-center justify-around flex-shrink-0 z-50 absolute bottom-0 w-full shadow-[0_-4px_10px_rgba(0,0,0,0.05)] print:hidden">
               <Link
                 to="/"
                 className="flex flex-col items-center gap-1 text-slate-400"
@@ -799,7 +799,7 @@ function RootComponent() {
           )}
 
           {/* BALÃO FLUTUANTE DA IA ASSISTENTE FINANCEIRO */}
-          <div className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-50 flex items-center justify-center">
+          <div className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-50 flex items-center justify-center print:hidden">
             {/* Subtle glow background element */}
             <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#1576D0] via-emerald-500 to-blue-500 blur-md opacity-45 animate-pulse -z-10" />
 

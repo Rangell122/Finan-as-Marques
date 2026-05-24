@@ -80,6 +80,7 @@ function SummaryCard({
   color,
   bgClass,
   subtitle,
+  onClick,
 }: {
   title: string;
   value: string;
@@ -87,9 +88,15 @@ function SummaryCard({
   color: string;
   bgClass: string;
   subtitle?: string;
+  onClick?: () => void;
 }) {
   return (
-    <Card className="hover:shadow-md transition-shadow duration-300 border border-border bg-white">
+    <Card 
+      onClick={onClick}
+      className={`hover:shadow-lg transition-all duration-300 border border-border bg-white ${
+        onClick ? "cursor-pointer hover:scale-[1.02] active:scale-[0.98]" : ""
+      }`}
+    >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-semibold text-slate-500">{title}</CardTitle>
         <div className={`p-2 rounded-xl ${bgClass}`}>
@@ -219,6 +226,12 @@ function Index() {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState("2026-05");
+  const [cardDetailModal, setCardDetailModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    transactions: any[];
+    isBalance?: boolean;
+  } | null>(null);
 
   // Emergency Reserve state variables (persisted in localStorage)
   const [isEditReserveOpen, setIsEditReserveOpen] = useState(false);
@@ -782,7 +795,7 @@ function Index() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-[#0B1120]">Painel Familiar</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-white">Painel Familiar</h1>
           <p className="text-slate-500 text-sm">
             Resumo financeiro para controle de gastos e acúmulo de riqueza.
           </p>
@@ -848,6 +861,18 @@ function Index() {
           color={saldo >= 0 ? "text-emerald-600" : "text-rose-600"}
           bgClass={saldo >= 0 ? "bg-emerald-50" : "bg-rose-50"}
           subtitle="Sobra líquida no caixa"
+          onClick={() => {
+            const balanceItems = parsedTransactions.filter((t) => 
+              t.type === "income" || 
+              (t.type === "expense" && (!isDebtTransaction(t) || t.status === "Pago" || t.status === "paid") && t.cardId === null)
+            );
+            setCardDetailModal({
+              isOpen: true,
+              title: "Detalhamento de Saldo Atual - " + formatMonthName(selectedMonth),
+              transactions: balanceItems,
+              isBalance: true,
+            });
+          }}
         />
         <SummaryCard
           title="Receitas (Entradas)"
@@ -856,6 +881,14 @@ function Index() {
           color="text-emerald-600"
           bgClass="bg-emerald-50"
           subtitle="Tudo que entrou no mês"
+          onClick={() => {
+            const incomeItems = parsedTransactions.filter((t) => t.type === "income");
+            setCardDetailModal({
+              isOpen: true,
+              title: "Detalhamento de Receitas (Entradas) - " + formatMonthName(selectedMonth),
+              transactions: incomeItems,
+            });
+          }}
         />
         <SummaryCard
           title="Despesas (Saídas)"
@@ -864,6 +897,18 @@ function Index() {
           color="text-rose-600"
           bgClass="bg-rose-50"
           subtitle="Tudo que saiu no mês"
+          onClick={() => {
+            const expenseItems = parsedTransactions.filter((t) => 
+              t.type === "expense" && 
+              (!isDebtTransaction(t) || t.status === "Pago" || t.status === "paid") && 
+              t.cardId === null
+            );
+            setCardDetailModal({
+              isOpen: true,
+              title: "Detalhamento de Despesas (Saídas) - " + formatMonthName(selectedMonth),
+              transactions: expenseItems,
+            });
+          }}
         />
         <SummaryCard
           title="Uso de Cartão de Crédito"
@@ -872,6 +917,16 @@ function Index() {
           color="text-amber-600"
           bgClass="bg-amber-50"
           subtitle="Faturas de Nubank + Inter"
+          onClick={() => {
+            const cardItems = parsedTransactions.filter((t) => 
+              t.type === "expense" && t.cardId !== null
+            );
+            setCardDetailModal({
+              isOpen: true,
+              title: "Detalhamento de Uso de Cartão de Crédito - " + formatMonthName(selectedMonth),
+              transactions: cardItems,
+            });
+          }}
         />
       </div>
 
@@ -1787,6 +1842,74 @@ function Index() {
               </DialogFooter>
             </form>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* DIALOG: Detalhes do Card do Resumo (Saldo, Receitas, Despesas, Cartão) */}
+      <Dialog 
+        open={cardDetailModal !== null && cardDetailModal.isOpen} 
+        onOpenChange={(open) => !open && setCardDetailModal(null)}
+      >
+        <DialogContent className="sm:max-w-[550px] max-h-[85vh] flex flex-col p-6">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-[#0B1120]">{cardDetailModal?.title}</DialogTitle>
+          </DialogHeader>
+          <div className="pt-4 flex-1 overflow-y-auto space-y-4 pr-1">
+            <div className="border border-slate-100 rounded-xl overflow-hidden">
+              <Table>
+                <TableBody>
+                  {cardDetailModal?.transactions && cardDetailModal.transactions.map((item) => {
+                    const isIncome = item.type === "income";
+                    return (
+                      <TableRow key={item.id} className="hover:bg-slate-50">
+                        <TableCell className="py-3 font-medium text-xs text-slate-500">
+                          {new Date(item.date).toLocaleDateString("pt-BR")}
+                        </TableCell>
+                        <TableCell className="py-3 text-sm font-semibold text-slate-800">
+                          <span className="block">{item.cleanDesc}</span>
+                          <span className="text-[10px] text-slate-400 block">{item.category}</span>
+                        </TableCell>
+                        <TableCell className="py-3 text-right">
+                          <div className="flex flex-col items-end gap-1">
+                            <span className={`font-extrabold text-sm ${
+                              cardDetailModal.isBalance 
+                                ? (isIncome ? "text-emerald-600" : "text-rose-600")
+                                : (isIncome ? "text-emerald-600" : "text-slate-800")
+                            }`}>
+                              {cardDetailModal.isBalance && !isIncome ? "- " : ""}
+                              {formatCurrency(item.amount)}
+                            </span>
+                            <div className="flex gap-1.5 items-center justify-end">
+                              {item.cardId && (
+                                <span className="px-1 py-0.2 bg-amber-50 text-amber-700 border border-amber-200 rounded text-[9px] font-bold">
+                                  {item.cardId}
+                                </span>
+                              )}
+                              <span className="px-1.5 py-0.2 bg-slate-100 text-slate-600 rounded text-[9px] font-bold">
+                                {item.responsible}
+                              </span>
+                            </div>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                  {cardDetailModal?.transactions && cardDetailModal.transactions.length === 0 && (
+                    <TableRow>
+                      <TableCell className="text-center py-10 text-sm text-slate-500">
+                        Nenhum lançamento encontrado neste grupo para o mês selecionado.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+          <DialogFooter className="mt-4 pt-4 border-t border-slate-100">
+            <Button onClick={() => setCardDetailModal(null)} className="w-full bg-[#0b1120] hover:bg-slate-800 text-white font-bold h-11 rounded-xl">
+              Fechar Detalhes
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </motion.div>

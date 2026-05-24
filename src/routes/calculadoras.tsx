@@ -153,7 +153,7 @@ function Calculadoras() {
       className="p-4 md:p-8 space-y-6 bg-background min-h-screen pb-24"
     >
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight text-[#0B1120] flex items-center gap-2">
+        <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-2">
           <Calculator className="w-8 h-8 text-[#1576D0]" />
           Calculadoras Financeiras
         </h1>

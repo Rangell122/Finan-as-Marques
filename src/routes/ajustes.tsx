@@ -70,7 +70,7 @@ function Ajustes() {
       className="p-4 md:p-8 space-y-6 bg-background min-h-screen pb-24"
     >
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight text-[#0B1120] flex items-center gap-2">
+        <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-2">
           <SlidersHorizontal className="w-6 h-6 text-[#1576D0]" />
           Ajustes
         </h1>
