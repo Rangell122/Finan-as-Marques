@@ -542,7 +542,7 @@ function RootComponent() {
           {isMobile && (
             <header className="h-16 border-b border-sidebar-border bg-sidebar flex items-center justify-between px-4 flex-shrink-0 z-50 relative text-sidebar-foreground w-full">
               <div className="flex items-center gap-2">
-                <Logo className="w-7 h-7 drop-shadow-[0_0_6px_rgba(212,166,58,0.35)]" />
+                <Logo className="w-7 h-7 drop-shadow-[0_0_6px_rgba(21,118,208,0.35)]" />
                 <span className="font-bold text-lg text-sidebar-foreground">Finanças Marques</span>
               </div>
               <Button
