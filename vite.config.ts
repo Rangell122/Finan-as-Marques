@@ -15,24 +15,24 @@ export default defineConfig({
   },
   plugins: [
     VitePWA({
-      registerType: 'autoUpdate',
-      includeAssets: ['logo.svg'],
+      registerType: "autoUpdate",
+      includeAssets: ["logo.svg"],
       manifest: {
-        name: 'Finanças Marques',
-        short_name: 'Finanças',
-        description: 'Controle Financeiro Premium',
-        theme_color: '#0E2C63',
-        background_color: '#0E2C63',
-        display: 'standalone',
+        name: "Finanças Marques",
+        short_name: "Finanças",
+        description: "Controle Financeiro Premium",
+        theme_color: "#0E2C63",
+        background_color: "#0E2C63",
+        display: "standalone",
         icons: [
           {
-            src: 'logo.svg',
-            sizes: '192x192 512x512',
-            type: 'image/svg+xml',
-            purpose: 'any maskable'
-          }
-        ]
-      }
-    })
-  ]
+            src: "logo.svg",
+            sizes: "192x192 512x512",
+            type: "image/svg+xml",
+            purpose: "any maskable",
+          },
+        ],
+      },
+    }),
+  ],
 });

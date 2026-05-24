@@ -9,9 +9,9 @@ export const Route = createFileRoute("/relatorios")({
 
 function Relatorios() {
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }} 
-      animate={{ opacity: 1, y: 0 }} 
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
       className="p-4 md:p-8 space-y-6 bg-background min-h-screen pb-24"
     >
       <div className="flex flex-col gap-2">
@@ -30,7 +30,10 @@ function Relatorios() {
         <p className="text-slate-500 max-w-xs">
           Esta tela de relatórios completos estará disponível nas próximas atualizações.
         </p>
-        <button onClick={() => window.print()} className="mt-4 bg-[#0E2C63] text-white px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-[#071A3D] transition-colors">
+        <button
+          onClick={() => window.print()}
+          className="mt-4 bg-[#0E2C63] text-white px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-[#071A3D] transition-colors"
+        >
           Exportar Resumo Atual em PDF
         </button>
       </Card>

@@ -1,55 +1,69 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Plus } from "lucide-react";
 
 export function AddTransactionDialog({ onAdd }: { onAdd: () => void }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  
-  const [type, setType] = useState('expense');
-  const [description, setDescription] = useState('');
-  const [amount, setAmount] = useState('');
-  const [date, setDate] = useState('');
-  const [category, setCategory] = useState('');
-  const [status, setStatus] = useState('paid');
-  const [responsible, setResponsible] = useState('Os dois');
+
+  const [type, setType] = useState("expense");
+  const [description, setDescription] = useState("");
+  const [amount, setAmount] = useState("");
+  const [date, setDate] = useState("");
+  const [category, setCategory] = useState("");
+  const [status, setStatus] = useState("paid");
+  const [responsible, setResponsible] = useState("Os dois");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
+
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuário não autenticado");
 
-      const finalDesc = type === 'expense' ? `[${responsible}] ${description}` : description;
+      const finalDesc = type === "expense" ? `[${responsible}] ${description}` : description;
 
-      const { error } = await supabase.from('transactions').insert({
+      const { error } = await supabase.from("transactions").insert({
         user_id: user.id,
         type,
         description: finalDesc,
         amount: parseFloat(amount),
         date,
         category,
-        status
+        status,
       });
 
       if (error) throw error;
-      
+
       setOpen(false);
-      
+
       // Limpa o form
-      setDescription('');
-      setAmount('');
-      setDate('');
-      setCategory('');
-      setResponsible('Os dois');
-      
+      setDescription("");
+      setAmount("");
+      setDate("");
+      setCategory("");
+      setResponsible("Os dois");
+
       onAdd();
     } catch (err: any) {
       alert(err.message);
@@ -74,7 +88,9 @@ export function AddTransactionDialog({ onAdd }: { onAdd: () => void }) {
             <div className="space-y-2">
               <Label>Tipo</Label>
               <Select value={type} onValueChange={setType}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="income">Receita (+)</SelectItem>
                   <SelectItem value="expense">Despesa (-)</SelectItem>
@@ -84,7 +100,9 @@ export function AddTransactionDialog({ onAdd }: { onAdd: () => void }) {
             <div className="space-y-2">
               <Label>Status</Label>
               <Select value={status} onValueChange={setStatus}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="paid">Pago</SelectItem>
                   <SelectItem value="pending">Pendente</SelectItem>
@@ -93,8 +111,8 @@ export function AddTransactionDialog({ onAdd }: { onAdd: () => void }) {
               </Select>
             </div>
           </div>
-          
-          {type === 'expense' && (
+
+          {type === "expense" && (
             <div className="space-y-2">
               <Label>Quem Gastou?</Label>
               <Select value={responsible} onValueChange={setResponsible}>
@@ -112,23 +130,40 @@ export function AddTransactionDialog({ onAdd }: { onAdd: () => void }) {
 
           <div className="space-y-2">
             <Label>Descrição</Label>
-            <Input required value={description} onChange={e => setDescription(e.target.value)} placeholder="Ex: Supermercado" />
+            <Input
+              required
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Ex: Supermercado"
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Valor (R$)</Label>
-              <Input type="number" step="0.01" required value={amount} onChange={e => setAmount(e.target.value)} placeholder="0.00" />
+              <Input
+                type="number"
+                step="0.01"
+                required
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="0.00"
+              />
             </div>
             <div className="space-y-2">
               <Label>Data</Label>
-              <Input type="date" required value={date} onChange={e => setDate(e.target.value)} />
+              <Input type="date" required value={date} onChange={(e) => setDate(e.target.value)} />
             </div>
           </div>
 
           <div className="space-y-2">
             <Label>Categoria</Label>
-            <Input required value={category} onChange={e => setCategory(e.target.value)} placeholder="Ex: Alimentação" />
+            <Input
+              required
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              placeholder="Ex: Alimentação"
+            />
           </div>
 
           <Button type="submit" className="w-full mt-4" disabled={loading}>
